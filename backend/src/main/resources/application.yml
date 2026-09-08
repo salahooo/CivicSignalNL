@@ -1,6 +1,20 @@
 spring:
   application:
     name: CivicSignal NL API
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+        spring.json.add.type.headers: false
+
+civic-signal:
+  kafka:
+    raw-reports-topic: ${KAFKA_RAW_REPORTS_TOPIC:civic-reports.raw}
+    publish-timeout: ${KAFKA_PUBLISH_TIMEOUT:5s}
 
 info:
   app:
