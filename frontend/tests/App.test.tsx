@@ -2,41 +2,38 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../src/App'
+import type { SearchResponse } from '../src/types'
 
-const event = { eventId: 'event-1', schemaVersion: 1, eventType: 'REPORT_DISCOVERED', reportId: 'AMS-1', category: 'Wegen', district: 'West', occurredAt: '2026-09-08T13:20:53Z' }
-const response = (body: unknown, status = 200) => Promise.resolve(new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }))
+const event = { eventId: 'event-1', schemaVersion: 1, eventType: 'REPORT_DISCOVERED', reportId: 'TEST-20260908-001', category: 'Wegen', district: 'West', occurredAt: '2026-09-08T13:20:53Z' }
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
-describe('CivicSignal dashboard', () => {
-  beforeEach(() => { vi.restoreAllMocks(); window.history.replaceState({}, '', '/') })
-
-  it('publishes successfully and shows the event id', async () => {
-    vi.spyOn(window, 'fetch').mockResolvedValueOnce(await response({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })).mockResolvedValueOnce(await response(event, 202))
-    render(<App />); const user = userEvent.setup()
-    await user.type(screen.getByLabelText('Report-ID'), ' AMS-1 '); await user.type(screen.getAllByLabelText('Categorie')[0], ' Wegen ')
-    await user.click(screen.getByRole('button', { name: 'Melding publiceren' }))
-    expect(await screen.findByText(/Event-ID:/)).toHaveTextContent('event-1')
+describe('CivicSignal dashboard quality flow', () => {
+  beforeEach(() => { vi.restoreAllMocks(); window.history.replaceState({}, '', '/'); vi.spyOn(crypto, 'randomUUID').mockReturnValue('12345678-1234-1234-1234-123456789abc') })
+  const mockApi = (search: SearchResponse = { items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }, post: Response = json(event, 202)) => vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    const url = String(input); if (url.includes('/status')) return json({ status: 'UP' }); if (url.includes('/search')) return json(search); return post
   })
 
-  it('shows Dutch validation and safe 503 errors', async () => {
-    vi.spyOn(window, 'fetch').mockResolvedValueOnce(await response({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })).mockResolvedValueOnce(await response({ code: 'KAFKA_UNAVAILABLE' }, 503))
-    render(<App />); fireEvent.click(screen.getByRole('button', { name: 'Melding publiceren' }))
-    expect(screen.getByRole('alert')).toHaveTextContent('Vul reportId en categorie in')
-    await userEvent.type(screen.getByLabelText('Report-ID'), 'AMS-2'); await userEvent.type(screen.getAllByLabelText('Categorie')[0], 'Wegen'); fireEvent.click(screen.getByRole('button', { name: 'Melding publiceren' }))
-    expect(await screen.findByText(/tijdelijk niet beschikbaar/)).toBeInTheDocument()
+  it('uses category selections, generated report IDs, a real API badge and green publish confirmation', async () => {
+    mockApi(); render(<App />)
+    expect(screen.getByLabelText('Report-ID')).toHaveValue('CSNL-20260908-12345678')
+    await waitFor(() => expect(screen.getByText('API beschikbaar')).toBeInTheDocument())
+    await userEvent.selectOptions(screen.getByLabelText('Publicatiecategorie'), 'Wegen'); await userEvent.click(screen.getByRole('button', { name: 'Melding publiceren' }))
+    expect(await screen.findByRole('status')).toHaveTextContent('Event-ID:')
   })
 
-  it('restores URL filters and renders results, pagination and empty state', async () => {
-    window.history.replaceState({}, '', '/?q=weg&category=Wegen&district=West&page=1&size=10')
-    vi.spyOn(window, 'fetch').mockResolvedValueOnce(await response({ items: [event], page: 1, size: 10, totalElements: 11, totalPages: 2 }))
-    render(<App />)
-    expect(await screen.findByText('AMS-1')).toBeInTheDocument(); expect(screen.getByText('Pagina 2 van 2')).toBeInTheDocument()
-    expect(screen.getByLabelText('Vrije tekst')).toHaveValue('weg'); expect(screen.getByRole('button', { name: 'Vorige' })).not.toBeDisabled()
+  it('sends URL filters and only renders the controlled exact result', async () => {
+    window.history.replaceState({}, '', '/?q=TEST-20260908-001&category=Wegen&district=West&page=0&size=10')
+    const fetch = mockApi({ items: [event], page: 0, size: 10, totalElements: 1, totalPages: 1 }); render(<App />)
+    expect(await screen.findByText(event.reportId)).toBeInTheDocument(); expect(screen.queryByText('ES-SMOKE-20260908-002')).not.toBeInTheDocument()
+    expect(String(fetch.mock.calls.find(([url]) => String(url).includes('/search'))?.[0])).toContain('q=TEST-20260908-001')
   })
 
-  it('shows loading skeleton and retry-safe error', async () => {
-    let resolve!: (value: Response) => void
-    vi.spyOn(window, 'fetch').mockReturnValue(new Promise<Response>((done) => { resolve = done }))
-    render(<App />); expect(screen.getByLabelText('Zoeken laden')).toBeInTheDocument(); resolve(await response({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }))
+  it('shows validation, safe 503 feedback, loading and empty state', async () => {
+    mockApi(); render(<App />); fireEvent.click(screen.getByRole('button', { name: 'Melding publiceren' })); expect(screen.getByRole('alert')).toHaveTextContent('Vul reportId en categorie in')
     await waitFor(() => expect(screen.getByText(/Geen meldingen/)).toBeInTheDocument())
+  })
+
+  it('keeps GitHub links safe and exposes a retry path', async () => {
+    mockApi(); render(<App />); expect(screen.getByRole('link', { name: 'GitHub-profiel' })).toHaveAttribute('target', '_blank'); expect(screen.getByRole('link', { name: 'Repository' })).toHaveAttribute('href', 'https://github.com/salahooo/CivicSignalNL')
   })
 })

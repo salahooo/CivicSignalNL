@@ -3,6 +3,6 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(js.configs.recommended, ...tseslint.configs.recommended, {
-  ignores: ['dist', 'playwright-report'],
+  ignores: ['dist/**', 'test-results/**', 'playwright-report/**'],
   languageOptions: { globals: globals.browser }
 })
