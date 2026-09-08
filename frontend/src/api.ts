@@ -1,4 +1,4 @@
-import type { DeadLetterResponse, GeneratorStatus, ReportEvent, SearchResponse } from './types'
+import type { AmsterdamImportResult, AmsterdamStatus, DeadLetterResponse, GeneratorStatus, ReportEvent, SearchResponse } from './types'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
@@ -18,3 +18,5 @@ export const searchReports = (params: URLSearchParams) => request<SearchResponse
 export const getDeadLetters = () => request<DeadLetterResponse>('/api/v1/admin/dead-letters?page=0&size=20')
 export const getGeneratorStatus = () => request<GeneratorStatus>('/api/v1/admin/generator/status')
 export const generatorAction = (action: 'start' | 'stop' | 'generate-one') => request<GeneratorStatus | ReportEvent>(`/api/v1/admin/generator/${action}`, { method: 'POST' })
+export const getAmsterdamStatus = () => request<AmsterdamStatus>('/api/v1/admin/sources/amsterdam/status')
+export const importAmsterdam = (limit: number, dryRun: boolean) => request<AmsterdamImportResult>(`/api/v1/admin/sources/amsterdam/import?limit=${limit}&dryRun=${dryRun}`, { method: 'POST' })

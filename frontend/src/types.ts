@@ -3,4 +3,7 @@ export type SearchResponse = { items: ReportEvent[]; page: number; size: number;
 export type DeadLetterEvent = { dltSchemaVersion: number; originalTopic: string; originalPartition: number; originalOffset: number; originalKey: string | null; failureType: string; failureMessage: string; failedAt: string; attemptCount: number; originalPayload: string | null }
 export type DeadLetterResponse = { items: DeadLetterEvent[]; page: number; size: number; totalElements: number; totalPages: number }
 export type ApiError = { code?: string; message?: string }
+export type AmsterdamStatus = { configured: boolean; enabled: boolean; sourceName: string; pageSize: number; maximumRecordsPerImport: number; importRunning: boolean; apiKeyConfigured: boolean; lastImportResult?: AmsterdamImportResult | null }
+export type AmsterdamPreview = { reportId: string; category: string; district: string; occurredAt: string; sourceType: string; sourceName: string }
+export type AmsterdamImportResult = { fetched: number; published: number; skipped: number; failed: number; startedAt: string; completedAt: string; nextPageAvailable: boolean; previewItems?: AmsterdamPreview[] }
 export type GeneratorStatus = { enabledByConfiguration: boolean; running: boolean; generatedThisRun: number; maximumPerRun: number; interval: string; duplicateProbability: number; invalidEventProbability: number; lastGeneratedAt: string | null }
