@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: CivicSignal NL API
+
+info:
+  app:
+    name: CivicSignal NL API
+    description: Event-driven platform for Dutch public-space reports
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

@@ -1,0 +1,39 @@
+# Java and Maven
+*.class
+*.jar
+*.war
+*.ear
+target/
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+
+# Build and test output
+build/
+out/
+coverage/
+reports/
+surefire-reports/
+failsafe-reports/
