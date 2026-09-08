@@ -64,6 +64,10 @@ public class ReportSearchService {
             filters.filter(query -> query.term(term -> term.field("district").value(criteria.district())));
             hasFilters = true;
         }
+        if (criteria.sourceType() != null) {
+            filters.filter(query -> query.term(term -> term.field("sourceType").value(criteria.sourceType().name())));
+            hasFilters = true;
+        }
         return hasFilters ? Query.of(query -> query.bool(filters.build())) : Query.of(query -> query.matchAll(matchAll -> matchAll));
     }
 

@@ -27,6 +27,13 @@ spring:
     uris: ${ELASTICSEARCH_URIS:http://localhost:9200}
 
 civic-signal:
+  generator:
+    enabled: ${CIVICSIGNAL_GENERATOR_ENABLED:false}
+    interval: ${CIVICSIGNAL_GENERATOR_INTERVAL:15s}
+    maximum-per-run: ${CIVICSIGNAL_GENERATOR_MAXIMUM_PER_RUN:100}
+    seed: ${CIVICSIGNAL_GENERATOR_SEED:}
+    duplicate-probability: ${CIVICSIGNAL_GENERATOR_DUPLICATE_PROBABILITY:0.10}
+    invalid-event-probability: ${CIVICSIGNAL_GENERATOR_INVALID_EVENT_PROBABILITY:0.00}
   cors:
     allowed-origins: ${CIVIC_SIGNAL_CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:8081}
   kafka:

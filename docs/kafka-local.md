@@ -12,6 +12,8 @@ The local replication factor is 1 because there is only one broker. Production s
 
 The report consumer indexes a valid event into Elasticsearch before its record offset is committed. If indexing fails, the listener fails too, so Kafka does not silently mark the event as processed.
 
+For optional local demonstration data, see [the synthetic source guide](synthetic-data-source.md). Both sources publish to the same raw topic.
+
 For local error handling, `civic-reports.dlt` stores records that cannot be processed after at most three attempts, or immediately when the input is permanently invalid such as malformed JSON. See [Kafka error handling](kafka-error-handling.md).
 
 ## Commands
