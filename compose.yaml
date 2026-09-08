@@ -59,6 +59,19 @@ services:
       retries: 12
       start_period: 30s
 
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080}
+    ports:
+      - "8081:80"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+
 volumes:
   kafka_data:
   elasticsearch_data:

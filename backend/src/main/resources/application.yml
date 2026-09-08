@@ -25,6 +25,8 @@ spring:
     uris: ${ELASTICSEARCH_URIS:http://localhost:9200}
 
 civic-signal:
+  cors:
+    allowed-origins: ${CIVIC_SIGNAL_CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:8081}
   kafka:
     raw-reports-topic: ${KAFKA_RAW_REPORTS_TOPIC:civic-reports.raw}
     publish-timeout: ${KAFKA_PUBLISH_TIMEOUT:5s}

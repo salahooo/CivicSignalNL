@@ -27,6 +27,9 @@ public class ReportSearchService {
                             .query(buildQuery(criteria))
                             .from(criteria.page() * criteria.size())
                             .size(criteria.size())
+                            .sort(hasText(criteria.q())
+                                    ? sort -> sort.score(score -> score.order(SortOrder.Desc))
+                                    : sort -> sort.field(field -> field.field("occurredAt").order(SortOrder.Desc)))
                             .sort(sort -> sort.field(field -> field.field("occurredAt").order(SortOrder.Desc))),
                     ReportDocument.class);
             long totalElements = response.hits().total() == null ? 0 : response.hits().total().value();
@@ -41,11 +44,16 @@ public class ReportSearchService {
         }
     }
 
-    private Query buildQuery(ReportSearchCriteria criteria) {
+    Query buildQuery(ReportSearchCriteria criteria) {
         BoolQuery.Builder filters = new BoolQuery.Builder();
         boolean hasFilters = false;
         if (hasText(criteria.q())) {
-            filters.must(query -> query.match(match -> match.field("searchableText").query(criteria.q())));
+            String queryText = criteria.q().trim();
+            if (looksLikeReportId(queryText)) {
+                filters.must(query -> query.term(term -> term.field("reportId").value(queryText)));
+            } else {
+                filters.must(query -> query.match(match -> match.field("searchableText").query(queryText)));
+            }
             hasFilters = true;
         }
         if (hasText(criteria.category())) {
@@ -61,5 +69,9 @@ public class ReportSearchService {
 
     private boolean hasText(String value) {
         return value != null && !value.isBlank();
+    }
+
+    private boolean looksLikeReportId(String value) {
+        return value.contains("-") && value.chars().anyMatch(Character::isDigit);
     }
 }
