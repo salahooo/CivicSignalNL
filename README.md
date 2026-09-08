@@ -4,7 +4,7 @@ CivicSignal NL is an event-driven platform for reports in Dutch public spaces.
 
 ## Current phase
 
-Phase 3 lets the Spring Boot backend validate and publish report events to local Kafka. See [the local Kafka guide](docs/kafka-local.md) and [the Kafka producer guide](docs/kafka-producer.md).
+Phase 4 adds a Spring Kafka consumer that validates and processes raw report events. See [the local Kafka guide](docs/kafka-local.md) and [the Kafka producer guide](docs/kafka-producer.md).
 
 ## Planned technologies
 

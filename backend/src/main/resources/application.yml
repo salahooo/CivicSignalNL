@@ -10,6 +10,17 @@ spring:
       properties:
         enable.idempotence: true
         spring.json.add.type.headers: false
+    consumer:
+      group-id: ${KAFKA_REPORT_PROCESSOR_GROUP_ID:civic-signal-report-processor-v1}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      properties:
+        spring.json.value.default.type: nl.salah.civicsignal.reports.ReportEvent
+        spring.json.trusted.packages: nl.salah.civicsignal.reports
+    listener:
+      ack-mode: record
 
 civic-signal:
   kafka:

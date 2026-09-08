@@ -4,7 +4,9 @@ This setup runs one Kafka broker locally. A **broker** stores topic data and ser
 
 Kafka runs in **KRaft** mode: the Kafka Raft metadata quorum replaces ZooKeeper. This local setup has one combined broker/controller node, with a separate internal controller listener on port 9093. The broker is available from the host on `localhost:9092`.
 
-A **topic** is a named event stream. `civic-reports.raw` has three **partitions**, independent ordered logs that allow consumers to scale. An **offset** is a record's sequential position within one partition. A **producer** writes records to a topic; a **consumer** reads records from it.
+A **topic** is a named event stream. `civic-reports.raw` has three **partitions**, independent ordered logs that allow consumers to scale. An **offset** is a record's sequential position within one partition. A **producer** writes records to a topic; a **consumer** reads records from it. The backend consumer belongs by default to the `civic-signal-report-processor-v1` **consumer group**, whose committed offsets track its progress per partition.
+
+For a new consumer group, `earliest` starts at the oldest retained records, while `latest` starts only with new records. This project uses `earliest` for predictable local processing. Auto-commit is disabled, and Spring Kafka commits each record only after the listener returns successfully.
 
 The local replication factor is 1 because there is only one broker. Production should use multiple brokers, replication greater than 1, appropriate minimum in-sync replicas, secure listeners, access control, monitoring, and capacity planning. This Compose configuration is therefore not a production configuration.
 
@@ -46,6 +48,12 @@ Consume messages from the beginning:
 
 ```powershell
 docker compose exec -it kafka /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server kafka:9092 --topic civic-reports.raw --from-beginning
+```
+
+View the backend consumer group's offsets:
+
+```powershell
+docker compose exec kafka /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server kafka:9092 --describe --group civic-signal-report-processor-v1
 ```
 
 Stop the services while preserving Kafka data:
