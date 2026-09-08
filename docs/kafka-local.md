@@ -1,0 +1,55 @@
+# Local Kafka
+
+This setup runs one Kafka broker locally. A **broker** stores topic data and serves producer and consumer requests. The same node also runs the **controller**, which manages Kafka metadata and partition leadership.
+
+Kafka runs in **KRaft** mode: the Kafka Raft metadata quorum replaces ZooKeeper. This local setup has one combined broker/controller node, with a separate internal controller listener on port 9093. The broker is available from the host on `localhost:9092`.
+
+A **topic** is a named event stream. `civic-reports.raw` has three **partitions**, independent ordered logs that allow consumers to scale. An **offset** is a record's sequential position within one partition. A **producer** writes records to a topic; a **consumer** reads records from it.
+
+The local replication factor is 1 because there is only one broker. Production should use multiple brokers, replication greater than 1, appropriate minimum in-sync replicas, secure listeners, access control, monitoring, and capacity planning. This Compose configuration is therefore not a production configuration.
+
+## Commands
+
+Run all commands from the repository root.
+
+Start Kafka and create the topic:
+
+```powershell
+docker compose up -d
+```
+
+View container status:
+
+```powershell
+docker compose ps
+```
+
+List topics:
+
+```powershell
+docker compose exec kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list
+```
+
+Describe the topic:
+
+```powershell
+docker compose exec kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --describe --topic civic-reports.raw
+```
+
+Produce a message manually:
+
+```powershell
+'{"eventId":"manual-001","eventType":"REPORT_DISCOVERED","reportId":"TEST-001"}' | docker compose exec -T kafka /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server kafka:9092 --topic civic-reports.raw
+```
+
+Consume messages from the beginning:
+
+```powershell
+docker compose exec -it kafka /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server kafka:9092 --topic civic-reports.raw --from-beginning
+```
+
+Stop the services while preserving Kafka data:
+
+```powershell
+docker compose down
+```

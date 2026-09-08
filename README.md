@@ -4,7 +4,7 @@ CivicSignal NL is an event-driven platform for reports in Dutch public spaces.
 
 ## Current phase
 
-Phase 1 establishes the minimal Spring Boot backend foundation and its status endpoint. No frontend, Kafka, Elasticsearch, database, authentication, or Docker configuration is included yet.
+Phase 2 adds local Apache Kafka infrastructure in KRaft mode. The Spring Boot backend remains unchanged; Kafka integration follows in a later phase. See [the local Kafka guide](docs/kafka-local.md).
 
 ## Planned technologies
 
