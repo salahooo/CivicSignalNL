@@ -27,9 +27,15 @@ public class ReportIndexInitializer {
                                     .properties("schemaVersion", property -> property.integer(integer -> integer))
                                     .properties("category", property -> property.keyword(keyword -> keyword))
                                     .properties("district", property -> property.keyword(keyword -> keyword))
+                                    .properties("sourceType", property -> property.keyword(keyword -> keyword))
+                                    .properties("sourceName", property -> property.keyword(keyword -> keyword))
                                     .properties("occurredAt", property -> property.date(date -> date))
                                     .properties("searchableText", property -> property.text(text -> text))));
                     LOGGER.info("Created Elasticsearch index: index={}", ReportDocumentIndexer.INDEX_NAME);
+                } else {
+                    elasticsearchClient.indices().putMapping(request -> request.index(ReportDocumentIndexer.INDEX_NAME)
+                            .properties("sourceType", property -> property.keyword(keyword -> keyword))
+                            .properties("sourceName", property -> property.keyword(keyword -> keyword)));
                 }
             } catch (IOException | ElasticsearchException exception) {
                 LOGGER.warn("Elasticsearch index initialization was unavailable: index={}", ReportDocumentIndexer.INDEX_NAME);

@@ -2,7 +2,8 @@
 
 ```mermaid
 flowchart LR
-    A[POST report event] --> B[Spring Boot producer]
+    A[Handmatig React-formulier] --> B[Spring Boot producer]
+    X[Synthetische demo-generator] --> B
     B --> C[Kafka: civic-reports.raw]
     C --> D[Spring Kafka consumer]
     D -->|valid| E[Elasticsearch: civic-reports]

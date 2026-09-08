@@ -34,14 +34,17 @@ public class ReportEventProducer {
                 request.reportId(),
                 request.category(),
                 request.district(),
-                Instant.now());
+                Instant.now(), ReportSourceType.MANUAL, "CivicSignal NL dashboard");
+        return publishEvent(event);
+    }
 
+    public ReportEvent publishEvent(ReportEvent event) {
         try {
             SendResult<String, ReportEvent> result = kafkaTemplate
                     .send(properties.rawReportsTopic(), event.reportId(), event)
                     .get(properties.publishTimeout().toMillis(), TimeUnit.MILLISECONDS);
-            LOGGER.info("Published report event: eventId={}, reportId={}, topic={}, partition={}, offset={}",
-                    event.eventId(), event.reportId(), properties.rawReportsTopic(),
+            LOGGER.info("Published report event: reportId={}, sourceType={}, topic={}, partition={}, offset={}",
+                    event.reportId(), event.sourceType(), properties.rawReportsTopic(),
                     result.getRecordMetadata().partition(), result.getRecordMetadata().offset());
             return event;
         } catch (InterruptedException exception) {

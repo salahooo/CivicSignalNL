@@ -12,5 +12,12 @@ public record ReportEvent(
         String reportId,
         String category,
         String district,
-        @JsonFormat(shape = JsonFormat.Shape.STRING) Instant occurredAt) {
+        @JsonFormat(shape = JsonFormat.Shape.STRING) Instant occurredAt,
+        ReportSourceType sourceType,
+        String sourceName) {
+    public ReportEvent(UUID eventId, int schemaVersion, ReportEventType eventType, String reportId, String category,
+                       String district, Instant occurredAt) {
+        this(eventId, schemaVersion, eventType, reportId, category, district, occurredAt,
+                ReportSourceType.MANUAL, "CivicSignal NL dashboard");
+    }
 }
