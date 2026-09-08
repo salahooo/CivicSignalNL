@@ -4,7 +4,7 @@ CivicSignal NL is an event-driven platform for reports in Dutch public spaces.
 
 ## Current phase
 
-Phase 8 adds an opt-in synthetic demonstration source. It never represents real citizen or government reports; see [synthetic data](docs/synthetic-data-source.md).
+Phase 9 adds a disabled-by-default Amsterdam Open Data adapter; see [adapter documentation](docs/amsterdam-open-data.md).
 
 ## Planned technologies
 

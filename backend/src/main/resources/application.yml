@@ -27,6 +27,13 @@ spring:
     uris: ${ELASTICSEARCH_URIS:http://localhost:9200}
 
 civic-signal:
+  amsterdam:
+    enabled: ${CIVICSIGNAL_AMSTERDAM_ENABLED:false}
+    base-url: ${CIVICSIGNAL_AMSTERDAM_BASE_URL:https://api.data.amsterdam.nl/v1/meldingen/meldingen}
+    api-key: ${CIVICSIGNAL_AMSTERDAM_API_KEY:}
+    page-size: ${CIVICSIGNAL_AMSTERDAM_PAGE_SIZE:50}
+    maximum-records-per-import: ${CIVICSIGNAL_AMSTERDAM_MAX_RECORDS:100}
+    request-timeout: ${CIVICSIGNAL_AMSTERDAM_REQUEST_TIMEOUT:10s}
   generator:
     enabled: ${CIVICSIGNAL_GENERATOR_ENABLED:false}
     interval: ${CIVICSIGNAL_GENERATOR_INTERVAL:15s}

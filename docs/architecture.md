@@ -4,6 +4,7 @@
 flowchart LR
     A[Handmatig React-formulier] --> B[Spring Boot producer]
     X[Synthetische demo-generator] --> B
+    Y[Amsterdam Open Data adapter] --> B
     B --> C[Kafka: civic-reports.raw]
     C --> D[Spring Kafka consumer]
     D -->|valid| E[Elasticsearch: civic-reports]
