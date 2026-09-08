@@ -10,13 +10,19 @@ import org.springframework.stereotype.Component;
 public class ReportEventConsumer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportEventConsumer.class);
+    private final ReportDocumentIndexer reportDocumentIndexer;
+
+    public ReportEventConsumer(ReportDocumentIndexer reportDocumentIndexer) {
+        this.reportDocumentIndexer = reportDocumentIndexer;
+    }
 
     @KafkaListener(topics = "${civic-signal.kafka.raw-reports-topic}")
     public void consume(ConsumerRecord<String, ReportEvent> record) {
         ReportEvent event = record.value();
         validate(record.key(), event);
+        reportDocumentIndexer.index(event);
 
-        LOGGER.info("Processed report event: eventId={}, reportId={}, topic={}, partition={}, offset={}",
+        LOGGER.info("Indexed report event: eventId={}, reportId={}, topic={}, partition={}, offset={}",
                 event.eventId(), event.reportId(), record.topic(), record.partition(), record.offset());
     }
 

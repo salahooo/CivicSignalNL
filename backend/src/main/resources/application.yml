@@ -21,6 +21,8 @@ spring:
         spring.json.trusted.packages: nl.salah.civicsignal.reports
     listener:
       ack-mode: record
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URIS:http://localhost:9200}
 
 civic-signal:
   kafka:

@@ -10,6 +10,8 @@ For a new consumer group, `earliest` starts at the oldest retained records, whil
 
 The local replication factor is 1 because there is only one broker. Production should use multiple brokers, replication greater than 1, appropriate minimum in-sync replicas, secure listeners, access control, monitoring, and capacity planning. This Compose configuration is therefore not a production configuration.
 
+The report consumer indexes a valid event into Elasticsearch before its record offset is committed. If indexing fails, the listener fails too, so Kafka does not silently mark the event as processed.
+
 ## Commands
 
 Run all commands from the repository root.

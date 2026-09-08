@@ -1,13 +1,12 @@
-# Planned architecture
+# Architecture
 
-```text
-Amsterdam Open Data API
-        → Spring Boot ingestion service
-        → Apache Kafka
-        → processing consumer
-        → Elasticsearch
-        → Spring Boot Search API
-        → React-dashboard
+```mermaid
+flowchart LR
+    A[POST report event] --> B[Spring Boot producer]
+    B --> C[Kafka: civic-reports.raw]
+    C --> D[Spring Kafka consumer]
+    D --> E[Elasticsearch: civic-reports]
+    E --> F[GET report search]
 ```
 
-This is the target flow for later phases; Phase 1 provides only the Spring Boot project foundation.
+Kafka is the durable event log; Elasticsearch is the derived search index used by the Search API. The React dashboard remains planned for a later phase.

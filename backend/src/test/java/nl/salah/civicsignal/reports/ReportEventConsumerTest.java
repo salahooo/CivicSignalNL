@@ -5,36 +5,61 @@ import java.util.UUID;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
+@ExtendWith(MockitoExtension.class)
 class ReportEventConsumerTest {
 
-    private final ReportEventConsumer consumer = new ReportEventConsumer();
+    @Mock
+    private ReportDocumentIndexer reportDocumentIndexer;
 
     @Test
     void acceptsValidRecord() {
-        assertDoesNotThrow(() -> consumer.consume(record("AMS-12345", event(1, "AMS-12345"))));
+        ReportEvent event = event(1, "AMS-12345");
+        assertDoesNotThrow(() -> consumer().consume(record("AMS-12345", event)));
+        verify(reportDocumentIndexer).index(event);
     }
 
     @Test
     void rejectsMissingKey() {
-        assertThrows(IllegalArgumentException.class, () -> consumer.consume(record("", event(1, "AMS-12345"))));
+        assertThrows(IllegalArgumentException.class, () -> consumer().consume(record("", event(1, "AMS-12345"))));
+        verifyNoInteractions(reportDocumentIndexer);
     }
 
     @Test
     void rejectsKeyThatDoesNotMatchReportId() {
-        assertThrows(IllegalArgumentException.class, () -> consumer.consume(record("AMS-OTHER", event(1, "AMS-12345"))));
+        assertThrows(IllegalArgumentException.class, () -> consumer().consume(record("AMS-OTHER", event(1, "AMS-12345"))));
+        verifyNoInteractions(reportDocumentIndexer);
     }
 
     @Test
     void rejectsUnknownSchemaVersion() {
-        assertThrows(IllegalArgumentException.class, () -> consumer.consume(record("AMS-12345", event(2, "AMS-12345"))));
+        assertThrows(IllegalArgumentException.class, () -> consumer().consume(record("AMS-12345", event(2, "AMS-12345"))));
+        verifyNoInteractions(reportDocumentIndexer);
+    }
+
+    @Test
+    void doesNotConfirmProcessingWhenIndexingFails() {
+        ReportEvent event = event(1, "AMS-12345");
+        doThrow(new ElasticsearchUnavailableException(new RuntimeException())).when(reportDocumentIndexer).index(event);
+        assertThrows(ElasticsearchUnavailableException.class, () -> consumer().consume(record("AMS-12345", event)));
+        verify(reportDocumentIndexer).index(event);
     }
 
     private ConsumerRecord<String, ReportEvent> record(String key, ReportEvent event) {
         return new ConsumerRecord<>("civic-reports.raw", 1, 42L, key, event);
+    }
+
+    private ReportEventConsumer consumer() {
+        return new ReportEventConsumer(reportDocumentIndexer);
     }
 
     private ReportEvent event(int schemaVersion, String reportId) {
