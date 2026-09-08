@@ -4,7 +4,7 @@ CivicSignal NL is an event-driven platform for reports in Dutch public spaces.
 
 ## Current phase
 
-Phase 6 adds a React dashboard for publishing and searching reports. See [the frontend guide](docs/frontend.md) alongside the Kafka and Elasticsearch guides.
+Phase 7 adds bounded Kafka retry and dead-letter handling, including a local dashboard view of non-processed reports. See [Kafka error handling](docs/kafka-error-handling.md), [local Kafka](docs/kafka-local.md), and the frontend guide.
 
 ## Planned technologies
 

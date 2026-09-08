@@ -1,4 +1,4 @@
-import type { ReportEvent, SearchResponse } from './types'
+import type { DeadLetterResponse, ReportEvent, SearchResponse } from './types'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
@@ -15,3 +15,4 @@ export const publishReport = (body: { reportId: string; category: string; distri
   request<ReportEvent>('/api/v1/report-events', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
 
 export const searchReports = (params: URLSearchParams) => request<SearchResponse>(`/api/v1/reports/search?${params.toString()}`)
+export const getDeadLetters = () => request<DeadLetterResponse>('/api/v1/admin/dead-letters?page=0&size=20')

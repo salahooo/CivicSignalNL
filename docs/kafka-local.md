@@ -12,6 +12,8 @@ The local replication factor is 1 because there is only one broker. Production s
 
 The report consumer indexes a valid event into Elasticsearch before its record offset is committed. If indexing fails, the listener fails too, so Kafka does not silently mark the event as processed.
 
+For local error handling, `civic-reports.dlt` stores records that cannot be processed after at most three attempts, or immediately when the input is permanently invalid such as malformed JSON. See [Kafka error handling](kafka-error-handling.md).
+
 ## Commands
 
 Run all commands from the repository root.
@@ -56,6 +58,12 @@ View the backend consumer group's offsets:
 
 ```powershell
 docker compose exec kafka /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server kafka:9092 --describe --group civic-signal-report-processor-v1
+```
+
+View DLT records:
+
+```powershell
+docker compose exec -it kafka /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server kafka:9092 --topic civic-reports.dlt --from-beginning
 ```
 
 Stop the services while preserving Kafka data:
