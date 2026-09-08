@@ -4,7 +4,7 @@ CivicSignal NL is an event-driven platform for reports in Dutch public spaces.
 
 ## Current phase
 
-Phase 5 indexes consumed Kafka report events in Elasticsearch and exposes a report search API. See [the local Kafka guide](docs/kafka-local.md), [the Kafka producer guide](docs/kafka-producer.md), and [the Elasticsearch guide](docs/elasticsearch-local.md).
+Phase 6 adds a React dashboard for publishing and searching reports. See [the frontend guide](docs/frontend.md) alongside the Kafka and Elasticsearch guides.
 
 ## Planned technologies
 
@@ -22,6 +22,19 @@ From `backend/`:
 ```
 
 The status endpoint is available at `http://localhost:8080/api/v1/status`.
+
+## Local stack and frontend
+
+```powershell
+docker compose up -d
+Set-Location frontend
+npm install
+npm run dev
+```
+
+The dashboard runs at `http://localhost:5173`; the containerized dashboard is available at `http://localhost:8081`. Set `VITE_API_BASE_URL` to change the browser API base URL (default: `http://localhost:8080`). For a local CORS origin change, set `CIVIC_SIGNAL_CORS_ALLOWED_ORIGINS` as a comma-separated list.
+
+Example workflow: start the backend and stack, publish a report in the dashboard, then search for its report ID after Kafka and Elasticsearch have processed it.
 
 ## Run tests
 
