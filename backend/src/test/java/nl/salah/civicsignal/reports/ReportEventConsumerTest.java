@@ -20,12 +20,15 @@ class ReportEventConsumerTest {
 
     @Mock
     private ReportDocumentIndexer reportDocumentIndexer;
+    @Mock
+    private ReportProcessingMetrics metrics;
 
     @Test
     void acceptsValidRecord() {
         ReportEvent event = event(1, "AMS-12345");
         assertDoesNotThrow(() -> consumer().consume(record("AMS-12345", event)));
         verify(reportDocumentIndexer).index(event);
+        verify(metrics).processed();
     }
 
     @Test
@@ -52,6 +55,7 @@ class ReportEventConsumerTest {
         doThrow(new ElasticsearchUnavailableException(new RuntimeException())).when(reportDocumentIndexer).index(event);
         assertThrows(ElasticsearchUnavailableException.class, () -> consumer().consume(record("AMS-12345", event)));
         verify(reportDocumentIndexer).index(event);
+        verifyNoInteractions(metrics);
     }
 
     private ConsumerRecord<String, ReportEvent> record(String key, ReportEvent event) {
@@ -59,7 +63,7 @@ class ReportEventConsumerTest {
     }
 
     private ReportEventConsumer consumer() {
-        return new ReportEventConsumer(reportDocumentIndexer);
+        return new ReportEventConsumer(reportDocumentIndexer, metrics);
     }
 
     private ReportEvent event(int schemaVersion, String reportId) {

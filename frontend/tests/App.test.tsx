@@ -1,39 +1,43 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../src/App'
-import type { SearchResponse } from '../src/types'
 
-const event = { eventId: 'event-1', schemaVersion: 1, eventType: 'REPORT_DISCOVERED', reportId: 'TEST-20260908-001', category: 'Wegen', district: 'West', occurredAt: '2026-09-08T13:20:53Z' }
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
+const search = { items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }
+const dltItem = { dltSchemaVersion: 1, originalTopic: 'civic-reports.raw', originalPartition: 1, originalOffset: 42, originalKey: 'AMS-123', failureType: 'JsonEOFException', failureMessage: 'Onvolledig JSON-bericht', failedAt: '2026-09-08T13:20:53Z', attemptCount: 1, originalPayload: null }
 
-describe('CivicSignal dashboard quality flow', () => {
+describe('Niet-verwerkte meldingen', () => {
   beforeEach(() => { vi.restoreAllMocks(); window.history.replaceState({}, '', '/'); vi.spyOn(crypto, 'randomUUID').mockReturnValue('12345678-1234-1234-1234-123456789abc') })
-  const mockApi = (search: SearchResponse = { items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }, post: Response = json(event, 202)) => vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
-    const url = String(input); if (url.includes('/status')) return json({ status: 'UP' }); if (url.includes('/search')) return json(search); return post
+  const mockApi = (dlt: Response) => vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    const url = String(input)
+    if (url.includes('/status')) return json({ status: 'UP' })
+    if (url.includes('/search')) return json(search)
+    if (url.includes('/admin/dead-letters')) return dlt
+    return json({})
   })
 
-  it('uses category selections, generated report IDs, a real API badge and green publish confirmation', async () => {
-    mockApi(); render(<App />)
-    expect(screen.getByLabelText('Report-ID')).toHaveValue('CSNL-20260908-12345678')
-    await waitFor(() => expect(screen.getByText('API beschikbaar')).toBeInTheDocument())
-    await userEvent.selectOptions(screen.getByLabelText('Publicatiecategorie'), 'Wegen'); await userEvent.click(screen.getByRole('button', { name: 'Melding publiceren' }))
-    expect(await screen.findByRole('status')).toHaveTextContent('Event-ID:')
+  it('shows the empty state', async () => {
+    mockApi(json(search)); render(<App />)
+    expect(await screen.findByText('Geen niet-verwerkte meldingen.')).toBeInTheDocument()
   })
 
-  it('sends URL filters and only renders the controlled exact result', async () => {
-    window.history.replaceState({}, '', '/?q=TEST-20260908-001&category=Wegen&district=West&page=0&size=10')
-    const fetch = mockApi({ items: [event], page: 0, size: 10, totalElements: 1, totalPages: 1 }); render(<App />)
-    expect(await screen.findByText(event.reportId)).toBeInTheDocument(); expect(screen.queryByText('ES-SMOKE-20260908-002')).not.toBeInTheDocument()
-    expect(String(fetch.mock.calls.find(([url]) => String(url).includes('/search'))?.[0])).toContain('q=TEST-20260908-001')
+  it('renders dead-letter metadata', async () => {
+    mockApi(json({ ...search, items: [dltItem], totalElements: 1, totalPages: 1 })); render(<App />)
+    expect(await screen.findByText('JsonEOFException')).toBeInTheDocument()
+    expect(screen.getByText('AMS-123')).toBeInTheDocument()
+    expect(screen.getByText(/civic-reports.raw/)).toBeInTheDocument()
   })
 
-  it('shows validation, safe 503 feedback, loading and empty state', async () => {
-    mockApi(); render(<App />); fireEvent.click(screen.getByRole('button', { name: 'Melding publiceren' })); expect(screen.getByRole('alert')).toHaveTextContent('Vul reportId en categorie in')
-    await waitFor(() => expect(screen.getByText(/Geen meldingen/)).toBeInTheDocument())
+  it('shows an error state when the DLT endpoint is unavailable', async () => {
+    mockApi(json({ code: 'KAFKA_UNAVAILABLE', message: 'unavailable' }, 503)); render(<App />)
+    expect(await screen.findByRole('alert')).toHaveTextContent('Niet-verwerkte meldingen zijn tijdelijk niet beschikbaar.')
   })
 
-  it('keeps GitHub links safe and exposes a retry path', async () => {
-    mockApi(); render(<App />); expect(screen.getByRole('link', { name: 'GitHub-profiel' })).toHaveAttribute('target', '_blank'); expect(screen.getByRole('link', { name: 'Repository' })).toHaveAttribute('href', 'https://github.com/salahooo/CivicSignalNL')
+  it('refreshes the DLT view only when requested manually', async () => {
+    const fetch = mockApi(json(search)); render(<App />)
+    await screen.findByText('Geen niet-verwerkte meldingen.')
+    await userEvent.click(screen.getByRole('button', { name: 'Vernieuwen' }))
+    await waitFor(() => expect(fetch.mock.calls.filter(([url]) => String(url).includes('/admin/dead-letters'))).toHaveLength(2))
   })
 })

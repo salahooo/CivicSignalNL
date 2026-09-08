@@ -11,9 +11,11 @@ public class ReportEventConsumer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportEventConsumer.class);
     private final ReportDocumentIndexer reportDocumentIndexer;
+    private final ReportProcessingMetrics metrics;
 
-    public ReportEventConsumer(ReportDocumentIndexer reportDocumentIndexer) {
+    public ReportEventConsumer(ReportDocumentIndexer reportDocumentIndexer, ReportProcessingMetrics metrics) {
         this.reportDocumentIndexer = reportDocumentIndexer;
+        this.metrics = metrics;
     }
 
     @KafkaListener(topics = "${civic-signal.kafka.raw-reports-topic}")
@@ -21,6 +23,7 @@ public class ReportEventConsumer {
         ReportEvent event = record.value();
         validate(record.key(), event);
         reportDocumentIndexer.index(event);
+        metrics.processed();
 
         LOGGER.info("Indexed report event: eventId={}, reportId={}, topic={}, partition={}, offset={}",
                 event.eventId(), event.reportId(), record.topic(), record.partition(), record.offset());
