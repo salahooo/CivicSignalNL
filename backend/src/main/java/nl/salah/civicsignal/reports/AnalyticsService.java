@@ -10,6 +10,7 @@ import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
 import co.elastic.clients.elasticsearch._types.aggregations.Percentiles;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,6 +20,7 @@ public class AnalyticsService {
     private final ElasticsearchClient elasticsearchClient;
     private final String indexName;
 
+    @Autowired
     public AnalyticsService(ElasticsearchClient elasticsearchClient) {
         this(elasticsearchClient, ReportDocumentIndexer.INDEX_NAME);
     }

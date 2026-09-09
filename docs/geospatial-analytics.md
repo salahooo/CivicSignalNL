@@ -48,3 +48,11 @@ Set-Location backend
 ```
 
 The smoke owns only the temporary `civic-reports-geospatial-smoke` index. It recreates that index, indexes exactly 20 deterministic documents, checks exact search/summary/cluster/point outcomes, and deletes the temporary index afterwards.
+
+## Dashboard consumer
+
+The public React routes `/`, `/reports` and `/map` serialize the same eight filters without credentials. Filter edits stay local until applied, after which the URL is the durable view state. Analytics uses a daily interval, reports request 20 records per page and the map requests at most 500 buckets or points for its confirmed bounding box.
+
+Map points include `sourceType` so list badges and point popups use the same provenance vocabulary. Legacy documents without enrichment remain valid: optional text is shown as unknown, absent timing as unavailable, and missing or invalid coordinates are excluded from the map only.
+
+The controlled frontend integration smoke indexes exactly 20 documents with municipality `CivicSmoke`, verifies exact total 20, newest report `CIVIC-SMOKE-20`, clustered location total 18 and a real admin login, then removes only those 20 known document IDs.

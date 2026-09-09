@@ -7,10 +7,11 @@ public record ReportMapPoint(
         String district,
         String reportStatus,
         String occurredAt,
+        String sourceType,
         ReportLocation location) {
 
     static ReportMapPoint from(ReportDocument document) {
         return new ReportMapPoint(document.reportId(), document.category(), document.municipality(), document.district(),
-                document.reportStatus(), document.occurredAt(), document.location());
+                document.reportStatus(), document.occurredAt(), document.sourceType(), document.location());
     }
 }

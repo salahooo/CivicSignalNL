@@ -113,6 +113,7 @@ class GeospatialAnalyticsElasticsearchSmokeTest {
         assertEquals(ReportMapMode.POINTS, points.mode());
         assertEquals(18, points.totalMatching());
         assertEquals(5, points.points().size());
+        assertEquals("SYNTHETIC", points.points().getFirst().sourceType());
         assertTrue(points.truncated());
     }
 

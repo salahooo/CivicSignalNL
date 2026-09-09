@@ -4,9 +4,13 @@ CivicSignal NL is an event-driven platform for reports in Dutch public spaces.
 
 ## Current phase
 
-Phase 13 secures administrative APIs with stateless HTTP Basic; see [admin security](docs/admin-security.md).
+The geospatial analytics dashboard is complete: shared URL filters drive Elasticsearch search, aggregations and a bounded cluster/point map. See the [frontend guide](docs/frontend.md), [geospatial contract](docs/geospatial-analytics.md) and [admin security](docs/admin-security.md).
 
-De beheerlogin bewaart credentials uitsluitend in browsergeheugen; vernieuwen van de pagina logt bewust uit.
+![Desktop dashboard](docs/images/geospatial-dashboard-desktop.png)
+
+![Mobile dashboard](docs/images/geospatial-dashboard-mobile.png)
+
+Admin credentials are kept only in browser memory; refreshing deliberately logs the administrator out.
 
 ## Planned technologies
 
@@ -34,9 +38,9 @@ npm install
 npm run dev
 ```
 
-The dashboard runs at `http://localhost:5173`; the containerized dashboard is available at `http://localhost:8081`. Set `VITE_API_BASE_URL` to change the browser API base URL (default: `http://localhost:8080`). For a local CORS origin change, set `CIVIC_SIGNAL_CORS_ALLOWED_ORIGINS` as a comma-separated list.
+The dashboard runs at `http://localhost:5173`; the containerized dashboard is available at `http://localhost:8081`. The backend runs at `http://localhost:8080`. Set `VITE_API_BASE_URL` to change the browser API base URL. For a local CORS origin change, set `CIVIC_SIGNAL_CORS_ALLOWED_ORIGINS` as a comma-separated list.
 
-Example workflow: start the backend and stack, publish a report in the dashboard, then search for its report ID after Kafka and Elasticsearch have processed it.
+The public dashboard has overview, reports, map, sources and architecture routes. The isolated admin route exposes generator, Amsterdam sync and dead-letter controls only after login.
 
 ## Run tests
 

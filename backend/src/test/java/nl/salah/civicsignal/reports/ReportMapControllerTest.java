@@ -43,7 +43,7 @@ class ReportMapControllerTest {
     @Test
     void returnsPointsAtHighZoom() throws Exception {
         var point = new ReportMapPoint("AMS-1", "Afval", "Amsterdam", "West", "OPEN",
-                "2026-09-01T00:00:00Z", new ReportLocation(52.37, 4.89));
+                "2026-09-01T00:00:00Z", "OFFICIAL_OPEN_DATA", new ReportLocation(52.37, 4.89));
         when(reportMapService.map(any(), any(), eq(14), eq(1)))
                 .thenReturn(new ReportMapResponse(ReportMapMode.POINTS, List.of(), List.of(point), 2, true));
 

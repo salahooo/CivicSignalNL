@@ -9,6 +9,7 @@ import co.elastic.clients.elasticsearch._types.GeoLocation;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,6 +19,7 @@ public class ReportMapService {
     private final ElasticsearchClient elasticsearchClient;
     private final String indexName;
 
+    @Autowired
     public ReportMapService(ElasticsearchClient elasticsearchClient) {
         this(elasticsearchClient, ReportDocumentIndexer.INDEX_NAME);
     }
