@@ -23,3 +23,4 @@ export const importAmsterdam = (limit: number, dryRun: boolean) => request<Amste
 export const getScheduler=()=>request<SchedulerStatus>('/api/v1/admin/sources/amsterdam/scheduler')
 export const schedulerAction=(action:'pause'|'resume'|'run-now')=>request<SchedulerStatus>(`/api/v1/admin/sources/amsterdam/scheduler/${action}`,{method:'POST'})
 export const getSyncRuns=(page:number)=>request<SyncRuns>(`/api/v1/admin/sources/amsterdam/runs?page=${page}&size=10`)
+export const adminMe=(authorization:string)=>request<{authenticated:boolean;username:string;roles:string[];authenticationType:string}>('/api/v1/admin/auth/me',{headers:{Authorization:authorization}})
