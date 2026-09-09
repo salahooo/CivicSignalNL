@@ -1,0 +1,8 @@
+# Explicit opt-in ports for Vite and a host JVM. Start only the infrastructure services.
+services:
+  kafka:
+    ports: ["127.0.0.1:9092:9094"]
+  elasticsearch:
+    ports: ["127.0.0.1:9200:9200"]
+  postgres:
+    ports: ["127.0.0.1:5435:5432"]

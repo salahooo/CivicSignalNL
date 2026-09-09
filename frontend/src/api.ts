@@ -1,6 +1,7 @@
 import type { AnalyticsBucket, AnalyticsInterval, AnalyticsSummary, AmsterdamImportResult, AmsterdamStatus, DeadLetterResponse, GeneratorStatus, ReportDocument, ReportEvent, ReportFilters, ReportLocation, ReportMapResponse, SchedulerStatus, SearchResponse, SourceType, SyncRuns } from './types'
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+const configuredBase = import.meta.env.VITE_API_BASE_URL
+const apiBaseUrl = configuredBase === 'same-origin' ? window.location.origin : configuredBase || 'http://localhost:8080'
 const REQUEST_TIMEOUT_MS = 10_000
 const sourceTypes: SourceType[] = ['MANUAL', 'SYNTHETIC', 'OFFICIAL_OPEN_DATA']
 const intervals: AnalyticsInterval[] = ['DAY', 'WEEK', 'MONTH']

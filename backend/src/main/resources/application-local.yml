@@ -1,0 +1,5 @@
+# Host-based development: application.yml supplies localhost endpoints.
+logging:
+  structured:
+    format:
+      console: ""

@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import nl.salah.civicsignal.observability.RequestIds;
 
 @Component
 public class ReportEventConsumer {
@@ -20,13 +21,14 @@ public class ReportEventConsumer {
 
     @KafkaListener(topics = "${civic-signal.kafka.raw-reports-topic}")
     public void consume(ConsumerRecord<String, ReportEvent> record) {
+        try (var ignored = RequestIds.scope(RequestIds.from(record.headers()))) {
         ReportEvent event = record.value();
         validate(record.key(), event);
         reportDocumentIndexer.index(event);
         metrics.processed();
 
-        LOGGER.info("Indexed report event: eventId={}, reportId={}, topic={}, partition={}, offset={}",
-                event.eventId(), event.reportId(), record.topic(), record.partition(), record.offset());
+        LOGGER.info("Report indexed partition={} offset={}", record.partition(), record.offset());
+        }
     }
 
     private void validate(String key, ReportEvent event) {

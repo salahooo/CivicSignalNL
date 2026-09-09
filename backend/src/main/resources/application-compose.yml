@@ -1,0 +1,8 @@
+spring:
+  config:
+    import: optional:configtree:/run/secrets/
+  datasource:
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+civic-signal:
+  cors:
+    allowed-origins: ""

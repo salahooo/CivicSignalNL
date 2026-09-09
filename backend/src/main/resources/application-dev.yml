@@ -1,0 +1,4 @@
+# Alias for the local profile, retaining structured logs if desired.
+spring:
+  config:
+    import: classpath:application-local.yml

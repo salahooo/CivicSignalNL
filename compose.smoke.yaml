@@ -1,0 +1,11 @@
+# Disposable storage only for the isolated smoke project; production volumes are never touched.
+services:
+  kafka:
+    volumes: !reset []
+    tmpfs: [/tmp/kraft-combined-logs:mode=1777]
+  elasticsearch:
+    volumes: !reset []
+    tmpfs: ["/usr/share/elasticsearch/data:uid=1000,gid=0,mode=0770"]
+  postgres:
+    volumes: !reset []
+    tmpfs: [/var/lib/postgresql/data:mode=0700]

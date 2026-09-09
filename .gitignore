@@ -34,7 +34,7 @@ pnpm-debug.log*
 build/
 out/
 coverage/
-reports/
+/reports/
 surefire-reports/
 failsafe-reports/
 frontend/dist/
