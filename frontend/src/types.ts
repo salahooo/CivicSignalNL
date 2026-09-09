@@ -1,5 +1,64 @@
-export type ReportEvent = { eventId: string; schemaVersion: number; eventType: string; reportId: string; category: string; district?: string; occurredAt: string; sourceType?: 'MANUAL' | 'SYNTHETIC'; sourceName?: string }
-export type SearchResponse = { items: ReportEvent[]; page: number; size: number; totalElements: number; totalPages: number }
+export type SourceType = 'MANUAL' | 'SYNTHETIC' | 'OFFICIAL_OPEN_DATA'
+export type DashboardSection = 'overview' | 'reports' | 'map' | 'sources' | 'architecture' | 'admin'
+export type AnalyticsInterval = 'DAY' | 'WEEK' | 'MONTH'
+
+export type ReportFilters = {
+  q: string
+  sourceType: SourceType | ''
+  category: string
+  municipality: string
+  district: string
+  reportStatus: string
+  dateFrom: string
+  dateTo: string
+}
+
+export type ReportLocation = { lat: number; lon: number }
+export type ReportDocument = {
+  eventId?: string
+  reportId: string
+  eventType?: string
+  schemaVersion?: number
+  category?: string | null
+  district?: string | null
+  occurredAt?: string | null
+  sourceType?: SourceType | null
+  sourceName?: string | null
+  municipality?: string | null
+  neighborhood?: string | null
+  subcategory?: string | null
+  reportStatus?: string | null
+  completedAt?: string | null
+  resolutionDays?: number | null
+  location?: ReportLocation | null
+}
+export type ReportEvent = ReportDocument & { occurredAt: string }
+export type SearchResponse = { items: ReportDocument[]; page: number; size: number; totalElements: number; totalPages: number }
+
+export type AnalyticsBucket = { value: string; count: number }
+export type AnalyticsTimelinePoint = { timestamp: string; count: number }
+export type AnalyticsSummary = {
+  total: number
+  open: number
+  closed: number
+  withLocation: number
+  averageResolutionDays: number | null
+  p50ResolutionDays: number | null
+  earliest: string | null
+  latest: string | null
+  topCategories: AnalyticsBucket[]
+  topSources: AnalyticsBucket[]
+  topMunicipalities: AnalyticsBucket[]
+  topDistricts: AnalyticsBucket[]
+  topStatuses: AnalyticsBucket[]
+  interval: AnalyticsInterval
+  timeline: AnalyticsTimelinePoint[]
+}
+
+export type ReportMapPoint = Pick<ReportDocument, 'reportId' | 'category' | 'municipality' | 'district' | 'reportStatus' | 'occurredAt' | 'sourceType'> & { location: ReportLocation }
+export type ReportMapCluster = { key: string; location: ReportLocation; count: number }
+export type ReportMapResponse = { mode: 'CLUSTERS' | 'POINTS'; clusters: ReportMapCluster[]; points: ReportMapPoint[]; totalMatching: number; truncated: boolean }
+
 export type DeadLetterEvent = { dltSchemaVersion: number; originalTopic: string; originalPartition: number; originalOffset: number; originalKey: string | null; failureType: string; failureMessage: string; failedAt: string; attemptCount: number; originalPayload: string | null }
 export type DeadLetterResponse = { items: DeadLetterEvent[]; page: number; size: number; totalElements: number; totalPages: number }
 export type ApiError = { code?: string; message?: string }

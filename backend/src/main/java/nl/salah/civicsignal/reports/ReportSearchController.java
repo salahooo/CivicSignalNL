@@ -22,11 +22,17 @@ public class ReportSearchController {
     @GetMapping
     public ReportSearchResponse search(
             @RequestParam(required = false) String q,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) String district,
             @RequestParam(required = false) ReportSourceType sourceType,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String municipality,
+            @RequestParam(required = false) String district,
+            @RequestParam(required = false) String reportStatus,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-        return reportSearchService.search(new ReportSearchCriteria(q, category, district, sourceType, page, size));
+        ReportFilterCriteria filters = ReportQueryParameters.filters(q, sourceType, category, municipality, district,
+                reportStatus, dateFrom, dateTo);
+        return reportSearchService.search(new ReportSearchCriteria(filters, page, size));
     }
 }

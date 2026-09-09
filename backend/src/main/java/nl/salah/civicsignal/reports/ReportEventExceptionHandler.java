@@ -6,6 +6,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 
 @RestControllerAdvice
 public class ReportEventExceptionHandler {
@@ -16,7 +18,9 @@ public class ReportEventExceptionHandler {
                 .body(new ErrorResponse("KAFKA_UNAVAILABLE", "Kafka is temporarily unavailable."));
     }
 
-    @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class})
+    @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class,
+            MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class,
+            InvalidReportQueryException.class})
     public ResponseEntity<ErrorResponse> handleInvalidRequest(Exception exception) {
         return ResponseEntity.badRequest()
                 .body(new ErrorResponse("VALIDATION_FAILED", "The request is invalid."));
