@@ -14,6 +14,6 @@ Invoke-RestMethod 'http://localhost:8080/api/v1/admin/sources/amsterdam/status'
 Invoke-RestMethod 'http://localhost:8080/api/v1/admin/sources/amsterdam/runs?page=0&size=20'
 ```
 
-PostgreSQL gebruikt lokaal hostpoort `5433` om conflicten met andere lokale PostgreSQL-instanties te vermijden. Spring Boot gebruikt standaard dezelfde poort; overschrijf dit alleen samen met `SPRING_DATASOURCE_URL`.
+PostgreSQL gebruikt lokaal hostpoort `5435` om conflicten met andere lokale PostgreSQL-instanties te vermijden. Spring Boot gebruikt standaard dezelfde poort; overschrijf dit alleen samen met `SPRING_DATASOURCE_URL`.
 
 De API ondersteunt sorteren met `_sort` en de `laatstGezienBron[gte]`-filter; het veld is door Amsterdam als datum/tijd van de laatste bronupdate gedocumenteerd. Zie de [Amsterdam API-documentatie](https://api.data.amsterdam.nl/v1/docs/datasets/meldingen.html).
