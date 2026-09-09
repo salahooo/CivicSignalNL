@@ -4,7 +4,7 @@ CivicSignal NL is an event-driven platform for reports in Dutch public spaces.
 
 ## Current phase
 
-Phase 10 adds persistent, incremental Amsterdam synchronization with PostgreSQL and Flyway; see [incremental sync](docs/incremental-sync.md) and the [adapter documentation](docs/amsterdam-open-data.md).
+Phase 11 adds an opt-in, fixed-delay Amsterdam synchronization scheduler; see [scheduled sync](docs/scheduled-sync.md).
 
 ## Planned technologies
 
