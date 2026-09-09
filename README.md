@@ -4,7 +4,7 @@ CivicSignal NL is an event-driven platform for reports in Dutch public spaces.
 
 ## Current phase
 
-Phase 12 adds a dashboard for schedulerstatus en synchronisatieruns; see [scheduled sync](docs/scheduled-sync.md).
+Phase 13 secures administrative APIs with stateless HTTP Basic; see [admin security](docs/admin-security.md).
 
 ## Planned technologies
 

@@ -33,6 +33,9 @@ spring:
     enabled: true
 
 civic-signal:
+  admin:
+    username: ${CIVICSIGNAL_ADMIN_USERNAME:admin}
+    password: ${CIVICSIGNAL_ADMIN_PASSWORD:}
   amsterdam:
     enabled: ${CIVICSIGNAL_AMSTERDAM_ENABLED:false}
     base-url: ${CIVICSIGNAL_AMSTERDAM_BASE_URL:https://api.data.amsterdam.nl/v1/meldingen/meldingen}
