@@ -11,3 +11,5 @@ $credential = [PSCredential]::new($env:CIVICSIGNAL_ADMIN_USERNAME, $securePasswo
 $env:CIVICSIGNAL_ADMIN_PASSWORD = $credential.GetNetworkCredential().Password
 Invoke-RestMethod http://localhost:8080/api/v1/admin/dead-letters -Authentication Basic -Credential $credential
 ```
+
+De React-login bewaart de Basic-credentials uitsluitend in geheugen; refresh en uitloggen wissen ze. Admincalls worden pas na verificatie gestart. Mislukte authenticatie is per remote address begrensd tot tien pogingen per minuut met maximaal 1.000 tijdelijke entries. Dit is single-instance bescherming; productie vereist daarnaast TLS, gateway-rate-limiting en secret management.

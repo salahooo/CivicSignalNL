@@ -1,9 +1,10 @@
 import type { AmsterdamImportResult, AmsterdamStatus, DeadLetterResponse, GeneratorStatus, ReportEvent, SearchResponse, SchedulerStatus, SyncRuns } from './types'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+let adminAuthorization:string|null=null;let unauthorized=()=>{};export const configureAdminClient=(value:string|null,onUnauthorized:()=>void)=>{adminAuthorization=value;unauthorized=onUnauthorized}
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, init)
+  const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),10000);const headers=new Headers(init?.headers);if((path.startsWith('/api/v1/admin/')||path.startsWith('/actuator/'))&&adminAuthorization)headers.set('Authorization',adminAuthorization);let response:Response;try{response=await fetch(new URL(path,apiBaseUrl),{...init,headers,signal:controller.signal,redirect:'error'})}finally{clearTimeout(timeout)};if(response.status===401&&adminAuthorization){adminAuthorization=null;unauthorized()}
   if (!response.ok) {
     const error = await response.json().catch(() => ({}))
     throw Object.assign(new Error(error.message || 'De aanvraag kon niet worden verwerkt.'), { status: response.status })

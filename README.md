@@ -6,6 +6,8 @@ CivicSignal NL is an event-driven platform for reports in Dutch public spaces.
 
 Phase 13 secures administrative APIs with stateless HTTP Basic; see [admin security](docs/admin-security.md).
 
+De beheerlogin bewaart credentials uitsluitend in browsergeheugen; vernieuwen van de pagina logt bewust uit.
+
 ## Planned technologies
 
 - Java 21 and Spring Boot

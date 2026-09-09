@@ -7,7 +7,7 @@ const noDlt: DeadLetterResponse = { items: [], page: 0, size: 20, totalElements:
 const categories = ['Wegen', 'Verlichting', 'Afval', 'Groen', 'Water', 'Overlast', 'Verkeer', 'Overig']
 const date = (value?: string | null) => value ? new Intl.DateTimeFormat('nl-NL', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—'
 
-export default function App() {
+export default function App({admin=false}:{admin?:boolean}) {
   const initial = new URLSearchParams(window.location.search)
   const [filters, setFilters] = useState({ q: initial.get('q') ?? '', category: initial.get('category') ?? '', district: initial.get('district') ?? '', sourceType: initial.get('sourceType') ?? '' })
   const [results, setResults] = useState<SearchResponse>(empty); const [searchError, setSearchError] = useState(''); const [loading, setLoading] = useState(false)
@@ -17,7 +17,7 @@ export default function App() {
   const search = async (next = filters) => { const p = new URLSearchParams(); Object.entries(next).forEach(([key, value]) => { if (value.trim()) p.set(key, value.trim()) }); p.set('page', '0'); p.set('size', '20'); window.history.replaceState({}, '', `?${p}`); setLoading(true); setSearchError(''); try { setResults(await searchReports(p)) } catch { setSearchError('De zoekfunctie is tijdelijk niet beschikbaar.') } finally { setLoading(false) } }
   const loadDlt = async () => { setDltLoading(true); setDltError(''); try { setDlt(await getDeadLetters()) } catch { setDltError('Niet-verwerkte meldingen zijn tijdelijk niet beschikbaar.') } finally { setDltLoading(false) } }
   const loadGenerator = async () => { setGeneratorError(''); try { setGenerator(await getGeneratorStatus()) } catch { setGeneratorError('Generatorstatus is tijdelijk niet beschikbaar.') } }
-  useEffect(() => { void search(); void loadDlt(); void loadGenerator() }, [])
+  useEffect(() => { void search() }, []);useEffect(()=>{if(admin){void loadDlt();void loadGenerator()}else{setDlt(noDlt);setGenerator(null)}},[admin])
   const submit = async (event: FormEvent) => { event.preventDefault(); if (!form.reportId.trim() || !form.category) { setFormError('Vul reportId en categorie in.'); return }; setFormError(''); try { await publishReport({ ...form, reportId: form.reportId.trim() }); setForm({ reportId: '', category: '', district: '' }) } catch { setFormError('De melding kon niet veilig worden verzonden.') } }
   const action = async (name: 'start' | 'stop' | 'generate-one') => { setGeneratorLoading(true); setGeneratorError(''); try { const response = await generatorAction(name); if ('running' in response) setGenerator(response); else await loadGenerator() } catch { setGeneratorError('Generatoractie is niet beschikbaar.') } finally { setGeneratorLoading(false) } }
   return <main className="shell"><header><p className="eyebrow">Openbare ruimte · Nederland</p><h1>CivicSignal NL</h1><p>Meldingen worden via Kafka verwerkt en daarna door Elasticsearch doorzoekbaar.</p></header>
