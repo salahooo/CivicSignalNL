@@ -10,17 +10,20 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Validated
 @RestController
-@RequestMapping("/api/v1/reports/search")
-public class ReportSearchController {
+@RequestMapping("/api/v1/reports/map")
+public class ReportMapController {
 
-    private final ReportSearchService reportSearchService;
+    private final ReportMapService reportMapService;
 
-    public ReportSearchController(ReportSearchService reportSearchService) {
-        this.reportSearchService = reportSearchService;
+    public ReportMapController(ReportMapService reportMapService) {
+        this.reportMapService = reportMapService;
     }
 
     @GetMapping
-    public ReportSearchResponse search(
+    public ReportMapResponse map(
+            @RequestParam String bbox,
+            @RequestParam @Min(0) @Max(22) int zoom,
+            @RequestParam(defaultValue = "500") @Min(1) @Max(1000) int limit,
             @RequestParam(required = false) String q,
             @RequestParam(required = false) ReportSourceType sourceType,
             @RequestParam(required = false) String category,
@@ -28,11 +31,9 @@ public class ReportSearchController {
             @RequestParam(required = false) String district,
             @RequestParam(required = false) String reportStatus,
             @RequestParam(required = false) String dateFrom,
-            @RequestParam(required = false) String dateTo,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
+            @RequestParam(required = false) String dateTo) {
         ReportFilterCriteria filters = ReportQueryParameters.filters(q, sourceType, category, municipality, district,
                 reportStatus, dateFrom, dateTo);
-        return reportSearchService.search(new ReportSearchCriteria(filters, page, size));
+        return reportMapService.map(filters, BoundingBox.parse(bbox), zoom, limit);
     }
 }

@@ -1,2 +1,8 @@
 package nl.salah.civicsignal.reports;
-public record ReportLocation(double latitude,double longitude) { }
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record ReportLocation(
+        @JsonProperty("lat") double latitude,
+        @JsonProperty("lon") double longitude) {
+}

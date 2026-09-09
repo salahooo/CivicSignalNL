@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.Instant;
+
 class ReportSearchServiceTest {
 
     private final ReportSearchService service = new ReportSearchService(null);
@@ -29,5 +31,18 @@ class ReportSearchServiceTest {
     void blankTextDoesNotAddTextFilter() {
         var query = service.buildQuery(new ReportSearchCriteria(" ", null, null, 0, 20));
         assertTrue(query.isMatchAll());
+    }
+
+    @Test
+    void allTypedFiltersAndDateRangeAreCombined() {
+        var filters = new ReportFilterCriteria(null, ReportSourceType.OFFICIAL_OPEN_DATA, "Afval", "Amsterdam",
+                "West", "OPEN", Instant.parse("2026-09-01T00:00:00Z"), Instant.parse("2026-09-30T23:59:59Z"));
+
+        var query = service.buildQuery(new ReportSearchCriteria(filters, 0, 20));
+
+        assertEquals(6, query.bool().filter().size());
+        assertEquals("sourceType", query.bool().filter().get(0).term().field());
+        assertTrue(query.bool().filter().get(5).range().isDate());
+        assertEquals("2026-09-01T00:00:00Z", query.bool().filter().get(5).range().date().gte());
     }
 }
