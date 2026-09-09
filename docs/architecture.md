@@ -4,7 +4,8 @@
 flowchart LR
     A[Handmatig React-formulier] --> B[Spring Boot producer]
     X[Synthetische demo-generator] --> B
-    Y[Amsterdam Open Data adapter] --> P[(PostgreSQL cursor / run history)]
+    S[Opt-in scheduler] --> Y[Amsterdam Open Data adapter]
+    Y --> P[(PostgreSQL cursor / run history)]
     Y --> B
     B --> C[Kafka: civic-reports.raw]
     C --> D[Spring Kafka consumer]
