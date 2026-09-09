@@ -25,6 +25,12 @@ spring:
       ack-on-error: false
   elasticsearch:
     uris: ${ELASTICSEARCH_URIS:http://localhost:9200}
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://127.0.0.1:5433/civicsignal}
+    username: ${SPRING_DATASOURCE_USERNAME:civicsignal}
+    password: ${SPRING_DATASOURCE_PASSWORD:civicsignal}
+  flyway:
+    enabled: true
 
 civic-signal:
   amsterdam:
@@ -34,6 +40,7 @@ civic-signal:
     page-size: ${CIVICSIGNAL_AMSTERDAM_PAGE_SIZE:50}
     maximum-records-per-import: ${CIVICSIGNAL_AMSTERDAM_MAX_RECORDS:100}
     request-timeout: ${CIVICSIGNAL_AMSTERDAM_REQUEST_TIMEOUT:10s}
+    bootstrap-from: ${CIVICSIGNAL_AMSTERDAM_BOOTSTRAP_FROM:}
   generator:
     enabled: ${CIVICSIGNAL_GENERATOR_ENABLED:false}
     interval: ${CIVICSIGNAL_GENERATOR_INTERVAL:15s}
