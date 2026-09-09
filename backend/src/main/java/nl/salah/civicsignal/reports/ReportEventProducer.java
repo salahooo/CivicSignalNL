@@ -43,8 +43,7 @@ public class ReportEventProducer {
             SendResult<String, ReportEvent> result = kafkaTemplate
                     .send(properties.rawReportsTopic(), event.reportId(), event)
                     .get(properties.publishTimeout().toMillis(), TimeUnit.MILLISECONDS);
-            LOGGER.info("Published report event: reportId={}, sourceType={}, topic={}, partition={}, offset={}",
-                    event.reportId(), event.sourceType(), properties.rawReportsTopic(),
+            LOGGER.info("Report published partition={} offset={}",
                     result.getRecordMetadata().partition(), result.getRecordMetadata().offset());
             return event;
         } catch (InterruptedException exception) {

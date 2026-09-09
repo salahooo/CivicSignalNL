@@ -1,4 +1,13 @@
 spring:
+  profiles:
+    default: local
+  lifecycle:
+    timeout-per-shutdown-phase: ${SHUTDOWN_TIMEOUT:30s}
+  task:
+    scheduling:
+      shutdown:
+        await-termination: true
+        await-termination-period: 20s
   application:
     name: CivicSignal NL API
   kafka:
@@ -10,6 +19,10 @@ spring:
       properties:
         enable.idempotence: true
         spring.json.add.type.headers: false
+        interceptor.classes: nl.salah.civicsignal.observability.RequestIdProducerInterceptor
+        max.block.ms: ${KAFKA_MAX_BLOCK_MS:5000}
+        request.timeout.ms: ${KAFKA_REQUEST_TIMEOUT_MS:10000}
+        delivery.timeout.ms: ${KAFKA_DELIVERY_TIMEOUT_MS:15000}
     consumer:
       group-id: ${KAFKA_REPORT_PROCESSOR_GROUP_ID:civic-signal-report-processor-v1}
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -23,12 +36,21 @@ spring:
     listener:
       ack-mode: record
       ack-on-error: false
+      poll-timeout: 1s
   elasticsearch:
     uris: ${ELASTICSEARCH_URIS:http://localhost:9200}
+    connection-timeout: ${ELASTICSEARCH_CONNECT_TIMEOUT:3s}
+    socket-timeout: ${ELASTICSEARCH_REQUEST_TIMEOUT:5s}
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://127.0.0.1:5435/civicsignal}
     username: ${SPRING_DATASOURCE_USERNAME:civicsignal}
     password: ${SPRING_DATASOURCE_PASSWORD:civicsignal}
+    hikari:
+      connection-timeout: 3000
+      validation-timeout: 2000
+      data-source-properties:
+        connectTimeout: 3
+        socketTimeout: 10
   flyway:
     enabled: true
 
@@ -76,7 +98,36 @@ info:
     description: Event-driven platform for Dutch public-space reports
 
 management:
+  endpoint:
+    health:
+      show-details: never
+      show-components: never
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState,db,elasticsearch,kafkaTopics,reportIndex,kafkaRecovery
   endpoints:
     web:
       exposure:
         include: health,info,metrics
+
+server:
+  shutdown: graceful
+  tomcat:
+    connection-timeout: 5s
+  error:
+    include-message: never
+    include-stacktrace: never
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: WARN
+    org.springframework.kafka.listener: OFF
+    org.apache.kafka: WARN
+  structured:
+    format:
+      console: ecs
