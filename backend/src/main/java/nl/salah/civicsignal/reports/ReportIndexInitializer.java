@@ -29,13 +29,14 @@ public class ReportIndexInitializer {
                                     .properties("district", property -> property.keyword(keyword -> keyword))
                                     .properties("sourceType", property -> property.keyword(keyword -> keyword))
                                     .properties("sourceName", property -> property.keyword(keyword -> keyword))
+                                    .properties("municipality",property->property.keyword(k->k)).properties("neighborhood",property->property.keyword(k->k)).properties("subcategory",property->property.keyword(k->k)).properties("reportStatus",property->property.keyword(k->k)).properties("completedAt",property->property.date(d->d)).properties("resolutionDays",property->property.integer(i->i)).properties("location",property->property.geoPoint(g->g))
                                     .properties("occurredAt", property -> property.date(date -> date))
                                     .properties("searchableText", property -> property.text(text -> text))));
                     LOGGER.info("Created Elasticsearch index: index={}", ReportDocumentIndexer.INDEX_NAME);
                 } else {
                     elasticsearchClient.indices().putMapping(request -> request.index(ReportDocumentIndexer.INDEX_NAME)
                             .properties("sourceType", property -> property.keyword(keyword -> keyword))
-                            .properties("sourceName", property -> property.keyword(keyword -> keyword)));
+                            .properties("sourceName", property -> property.keyword(keyword -> keyword)).properties("municipality",property->property.keyword(k->k)).properties("neighborhood",property->property.keyword(k->k)).properties("subcategory",property->property.keyword(k->k)).properties("reportStatus",property->property.keyword(k->k)).properties("completedAt",property->property.date(d->d)).properties("resolutionDays",property->property.integer(i->i)).properties("location",property->property.geoPoint(g->g)));
                 }
             } catch (IOException | ElasticsearchException exception) {
                 LOGGER.warn("Elasticsearch index initialization was unavailable: index={}", ReportDocumentIndexer.INDEX_NAME);

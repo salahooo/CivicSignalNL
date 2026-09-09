@@ -12,7 +12,7 @@ public record ReportDocument(
         String occurredAt,
         String sourceType,
         String sourceName,
-        String searchableText) {
+        String searchableText,String municipality,String neighborhood,String subcategory,String reportStatus,String completedAt,Integer resolutionDays,ReportLocation location) {
 
     public static ReportDocument from(ReportEvent event) {
         ReportSourceType sourceType = event.sourceType() == null ? ReportSourceType.MANUAL : event.sourceType();
@@ -22,6 +22,6 @@ public record ReportDocument(
                 .reduce((left, right) -> left + " " + right)
                 .orElse("");
         return new ReportDocument(event.eventId().toString(), event.reportId(), event.eventType().name(),
-                event.schemaVersion(), event.category(), event.district(), event.occurredAt().toString(), sourceType.name(), sourceName, searchableText);
+                event.schemaVersion(), event.category(), event.district(), event.occurredAt().toString(), sourceType.name(), sourceName, searchableText,event.municipality(),event.neighborhood(),event.subcategory(),event.reportStatus(),event.completedAt()==null?null:event.completedAt().toString(),event.resolutionDays(),event.location());
     }
 }
