@@ -4,7 +4,7 @@ CivicSignal NL is an event-driven platform for reports in Dutch public spaces.
 
 ## Current phase
 
-Phase 11 adds an opt-in, fixed-delay Amsterdam synchronization scheduler; see [scheduled sync](docs/scheduled-sync.md).
+Phase 12 adds a dashboard for schedulerstatus en synchronisatieruns; see [scheduled sync](docs/scheduled-sync.md).
 
 ## Planned technologies
 

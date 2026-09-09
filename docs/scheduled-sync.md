@@ -22,3 +22,5 @@ Invoke-RestMethod http://localhost:8080/api/v1/admin/sources/amsterdam/scheduler
 ```
 
 Metrics: `civic_amsterdam_sync_scheduled_total`, `_success_total`, `_partial_total`, `_failed_total`, `_skipped_locked_total`, `_auto_paused_total`, `_manual_run_total` en de gauge `_consecutive_failures`.
+
+De lokale frontend toont status, runtime-pauze, runhistorie en handmatige acties. Environmentconfiguratie verandert nooit vanuit React en er is geen polling; na een actie wordt de status eenmaal vernieuwd. Beheerendpoints moeten vóór publieke inzet worden beveiligd.
