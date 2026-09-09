@@ -6,6 +6,8 @@ Alleen id, categorie, datum/tijd en gebiedsvelden worden gelezen. Persoonsgegeve
 
 De adapter staat standaard uit, heeft geen scheduler en ondersteunt dry-run. Een API-key is optioneel zolang de bron die toestaat; configureer hem alleen via de omgeving. De beheerendpoint is uitsluitend lokaal en moet vóór publieke inzet beveiligd of uitgeschakeld worden.
 
+Vanaf fase 10 is de import incrementeel en persistent. De cursor gebruikt `laatstGezienBron` en `id`, wordt pas na een Kafka-bevestiging bijgewerkt en de runhistorie is beschikbaar via `GET /api/v1/admin/sources/amsterdam/runs`. Zie [incremental-sync.md](incremental-sync.md) voor bootstrap, foutgedrag en PostgreSQL.
+
 ```powershell
 $env:CIVICSIGNAL_AMSTERDAM_ENABLED='true'
 Invoke-RestMethod http://localhost:8080/api/v1/admin/sources/amsterdam/status
