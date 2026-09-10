@@ -1,5 +1,9 @@
 # Local production stack
 
+The operational workflow adds Flyway V2 and the internal `civic-reports.workflow` Kafka topic. Normal local/Compose outbox publication is enabled with `CIVICSIGNAL_OUTBOX_ENABLED=true`; source import and scheduler defaults remain off. Readiness also checks the workflow topic. Run `node scripts/compose-smoke.mjs --workflow` for a complete dossier/outbox verification. This mode disables only its own automatic outbox worker to control the temporary Kafka-failure scenario. Existing named volumes and other Compose projects are untouched.
+
+Backend tests now include an automatically cleaned PostgreSQL Testcontainer and need a running Docker Engine. The Java test dependency is pinned to Testcontainers 1.21.4 for modern Docker compatibility. Dossier/outbox UI uses the same Nginx origin and memory-only admin client as the existing dashboard.
+
 This is a production-shaped local demonstration, not an internet-facing deployment. Requirements: Docker Engine/Desktop with Compose v2.24.4 or newer, about 4 GB of available Docker memory, and Node 24.15.0 for the smoke script. Java/Maven are built inside the backend image.
 
 ## Start and stop

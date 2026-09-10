@@ -34,7 +34,8 @@ public class ReportIndexInitializer {
                             .properties("reportStatus", property -> property.keyword(keyword -> keyword))
                             .properties("completedAt", property -> property.date(date -> date))
                             .properties("resolutionDays", property -> property.integer(integer -> integer))
-                            .properties("location", property -> property.geoPoint(geoPoint -> geoPoint)));
+                            .properties("location", property -> property.geoPoint(geoPoint -> geoPoint))
+                            .properties(workflowMapping().properties()));
                 }
             } catch (IOException | ElasticsearchException exception) {
                 LOGGER.warn("Elasticsearch index initialization was unavailable: index={}", ReportDocumentIndexer.INDEX_NAME);
@@ -60,6 +61,21 @@ public class ReportIndexInitializer {
                 .properties("resolutionDays", property -> property.integer(integer -> integer))
                 .properties("location", property -> property.geoPoint(geoPoint -> geoPoint))
                 .properties("occurredAt", property -> property.date(date -> date))
-                .properties("searchableText", property -> property.text(text -> text)));
+                .properties("searchableText", property -> property.text(text -> text))
+                .properties(workflowMapping().properties()));
+    }
+
+    private static TypeMapping workflowMapping() {
+        return TypeMapping.of(m -> m
+                .properties("workflowVersion", p -> p.long_(v -> v))
+                .properties("workflowCreatedAt", p -> p.date(v -> v))
+                .properties("workflowUpdatedAt", p -> p.date(v -> v))
+                .properties("resolvedAt", p -> p.date(v -> v))
+                .properties("closedAt", p -> p.date(v -> v))
+                .properties("statusChangeDates", p -> p.date(v -> v))
+                .properties("discoveryEpoch", p -> p.long_(v -> v))
+                .properties("reopenCount", p -> p.integer(v -> v))
+                .properties("workflowResolutionDays", p -> p.double_(v -> v))
+                .properties("workflowClosureDays", p -> p.double_(v -> v)));
     }
 }

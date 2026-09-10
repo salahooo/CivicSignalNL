@@ -2,6 +2,7 @@ package nl.salah.civicsignal.reports;
 
 import java.util.stream.Stream;
 
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
 public record ReportDocument(
         String eventId,
         String reportId,
@@ -12,7 +13,16 @@ public record ReportDocument(
         String occurredAt,
         String sourceType,
         String sourceName,
-        String searchableText,String municipality,String neighborhood,String subcategory,String reportStatus,String completedAt,Integer resolutionDays,ReportLocation location) {
+        String searchableText,String municipality,String neighborhood,String subcategory,String reportStatus,String completedAt,Integer resolutionDays,ReportLocation location,
+        String workflowUpdatedAt, String resolvedAt, String closedAt, Long workflowVersion) {
+
+    public ReportDocument(String eventId, String reportId, String eventType, int schemaVersion, String category, String district,
+            String occurredAt, String sourceType, String sourceName, String searchableText, String municipality, String neighborhood,
+            String subcategory, String reportStatus, String completedAt, Integer resolutionDays, ReportLocation location) {
+        this(eventId, reportId, eventType, schemaVersion, category, district, occurredAt, sourceType, sourceName, searchableText,
+                municipality, neighborhood, subcategory, reportStatus == null || reportStatus.isBlank() ? "NEW" : reportStatus,
+                completedAt, resolutionDays, location, null, null, null, null);
+    }
 
     public static ReportDocument from(ReportEvent event) {
         ReportSourceType sourceType = event.sourceType() == null ? ReportSourceType.MANUAL : event.sourceType();

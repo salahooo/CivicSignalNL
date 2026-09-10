@@ -1,5 +1,9 @@
 # CivicSignal NL
 
+The report case workflow adds authenticated dossiers, validated status transitions, internal demonstration notes and an immutable audit trail. PostgreSQL commands and a transactional outbox feed a version-guarded public Elasticsearch projection through Kafka. Start with [report workflow](docs/report-workflow.md) and [transactional outbox](docs/transactional-outbox.md).
+
+Full workflow smoke: `node scripts/compose-smoke.mjs --workflow`. Backend tests now require Docker for an isolated PostgreSQL Testcontainer. Browser verification: `cd frontend` then `npx playwright test e2e/report-workflow.spec.ts --workers=2`.
+
 CivicSignal NL is an event-driven platform for reports in Dutch public spaces.
 
 ## Current phase

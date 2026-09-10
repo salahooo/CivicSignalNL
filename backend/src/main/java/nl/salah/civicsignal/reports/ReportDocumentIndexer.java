@@ -20,11 +20,23 @@ public class ReportDocumentIndexer {
 
     public void index(ReportEvent event) {
         try {
-            elasticsearchClient.index(request -> request
+            elasticsearchClient.update(request -> request
                     .index(INDEX_NAME)
                     .id(event.reportId())
-                    .document(ReportDocument.from(event))
-                    .refresh(Refresh.WaitFor));
+                    .retryOnConflict(3)
+                    .scriptedUpsert(true)
+                    .script(script -> script.lang("painless").source("""
+                        if (ctx._source.discoveryEpoch != null && ctx._source.discoveryEpoch > params.epoch) { ctx.op='noop'; }
+                        else {
+                          def fields=params.fields;
+                          fields.remove('workflowVersion'); fields.remove('workflowUpdatedAt'); fields.remove('resolvedAt'); fields.remove('closedAt');
+                          if (ctx._source.workflowVersion != null) { fields.remove('reportStatus'); }
+                          ctx._source.putAll(fields); ctx._source.discoveryEpoch=params.epoch;
+                        }
+                        """).params("fields", co.elastic.clients.json.JsonData.of(ReportDocument.from(event)))
+                            .params("epoch", co.elastic.clients.json.JsonData.of(event.occurredAt().toEpochMilli())))
+                    .upsert(ReportDocument.from(event))
+                    .refresh(Refresh.WaitFor), ReportDocument.class);
         } catch (IOException | ElasticsearchException exception) {
             throw new ElasticsearchUnavailableException(exception);
         }

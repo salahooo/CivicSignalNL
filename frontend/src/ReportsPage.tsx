@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { searchReports } from './api'
+import { useAdmin } from './AdminAuth'
+import { StatusBadge } from './CasePage'
 import type { ReportDocument, ReportFilters, ReportLocation, SearchResponse } from './types'
 
 const empty: SearchResponse = { items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }
@@ -14,4 +16,10 @@ export function ReportsPage({ filters, page, onPage, onMap }: { filters: ReportF
     <nav className="pagination" aria-label="Paginering"><button className="secondary" disabled={page <= 0 || loading} onClick={() => onPage(page - 1)}>Vorige</button><span>Pagina {results.totalPages ? page + 1 : 0} van {results.totalPages}</span><button className="secondary" disabled={page + 1 >= results.totalPages || loading} onClick={() => onPage(page + 1)}>Volgende</button></nav></section>
 }
 
-function ReportRow({ item, onMap }: { item: ReportDocument; onMap: (location: ReportLocation) => void }) { return <tr><td data-label="Melding"><strong>{item.reportId}</strong><span className={`source-badge source-${item.sourceType?.toLowerCase() || 'unknown'}`}>{source(item.sourceType)}</span></td><td data-label="Classificatie">{value(item.category)}<span>{value(item.subcategory)}</span></td><td data-label="Gebied">{value(item.municipality)}<span>{value(item.district)} · {value(item.neighborhood)}</span></td><td data-label="Status en tijd">{value(item.reportStatus)}<span>Gemeld: {date(item.occurredAt)}<br/>Afgerond: {date(item.completedAt)}<br/>Duur: {item.resolutionDays === null || item.resolutionDays === undefined ? 'Niet beschikbaar' : `${item.resolutionDays.toLocaleString('nl-NL')} dagen`}</span></td><td data-label="Locatie">{item.location ? <><span className="location-yes">Ja</span><button className="text-button" onClick={() => onMap(item.location!)}>Open op kaart</button></> : 'Nee'}</td></tr> }
+function ReportRow({ item, onMap }: { item: ReportDocument; onMap: (location: ReportLocation) => void }) { return <tr><td data-label="Melding"><strong>{item.reportId}</strong><CaseLink reportId={item.reportId}/><span className={`source-badge source-${item.sourceType?.toLowerCase() || 'unknown'}`}>{source(item.sourceType)}</span></td><td data-label="Classificatie">{value(item.category)}<span>{value(item.subcategory)}</span></td><td data-label="Gebied">{value(item.municipality)}<span>{value(item.district)} · {value(item.neighborhood)}</span></td><td data-label="Status en tijd"><StatusBadge status={item.reportStatus}/><span>Gemeld: {date(item.occurredAt)}<br/>Afgerond: {date(item.completedAt)}<br/>Duur: {item.resolutionDays === null || item.resolutionDays === undefined ? 'Niet beschikbaar' : `${item.resolutionDays.toLocaleString('nl-NL')} dagen`}</span></td><td data-label="Locatie">{item.location ? <><span className="location-yes">Ja</span><button className="text-button" onClick={() => onMap(item.location!)}>Open op kaart</button></> : 'Nee'}</td></tr> }
+
+function CaseLink({ reportId }: { reportId: string }) {
+  const { authorization } = useAdmin()
+  if (!authorization) return null
+  return <a href={`/admin/reports/${encodeURIComponent(reportId)}`} onClick={event => { if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return; event.preventDefault(); window.history.pushState({}, '', event.currentTarget.href); window.dispatchEvent(new PopStateEvent('popstate')) }}>Open dossier</a>
+}

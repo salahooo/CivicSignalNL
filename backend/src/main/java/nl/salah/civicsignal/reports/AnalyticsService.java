@@ -19,6 +19,8 @@ public class AnalyticsService {
     private static final int TOP_BUCKET_LIMIT = 10;
     private final ElasticsearchClient elasticsearchClient;
     private final String indexName;
+    @org.springframework.beans.factory.annotation.Value("${civic-signal.workflow.overdue-days:30}")
+    private int overdueDays = 30;
 
     @Autowired
     public AnalyticsService(ElasticsearchClient elasticsearchClient) {
@@ -37,11 +39,20 @@ public class AnalyticsService {
                             .size(0)
                             .trackTotalHits(track -> track.enabled(true))
                             .query(ReportFilterQueryBuilder.build(filters))
-                            .aggregations("open", aggregation -> aggregation
-                                    .filter(query -> query.bool(bool -> bool
-                                            .mustNot(mustNot -> mustNot.exists(exists -> exists.field("completedAt"))))))
-                            .aggregations("closed", aggregation -> aggregation
-                                    .filter(query -> query.exists(exists -> exists.field("completedAt"))))
+                            .aggregations("open", aggregation -> aggregation.filter(openQuery()))
+                            .aggregations("closed", aggregation -> aggregation.filter(q -> q.bool(b -> b.mustNot(openQuery()))))
+                            .aggregations("observedCases", a -> a.filter(q -> q.exists(e -> e.field("workflowCreatedAt"))))
+                            .aggregations("workflowResolved", a -> a.filter(q -> q.exists(e -> e.field("resolvedAt"))))
+                            .aggregations("workflowResolutionAvg", a -> a.avg(v -> v.field("workflowResolutionDays")))
+                            .aggregations("workflowResolutionP50", a -> a.percentiles(v -> v.field("workflowResolutionDays").percents(50.0)))
+                            .aggregations("workflowClosureAvg", a -> a.avg(v -> v.field("workflowClosureDays")))
+                            .aggregations("workflowClosureP50", a -> a.percentiles(v -> v.field("workflowClosureDays").percents(50.0)))
+                            .aggregations("overdueOpen", a -> a.filter(q -> q.bool(b -> b.filter(openQuery()).filter(f -> f.range(r -> r.date(d -> d.field("workflowCreatedAt").lt(Instant.now().minus(java.time.Duration.ofDays(Math.max(1, overdueDays))).toString())))))))
+                            .aggregations("reopenedReports", a -> a.filter(q -> q.range(r -> r.number(n -> n.field("reopenCount").gt(0.0)))))
+                            .aggregations("statusChanges", a -> a.sum(s -> s.script(script -> script.lang("painless")
+                                    .source("long count=0; for (def d : doc['statusChangeDates']) { long t=d.toInstant().toEpochMilli(); if (t>=params.from && t<=params.to) count++; } return count;")
+                                    .params("from", co.elastic.clients.json.JsonData.of(filters.dateFrom()==null?0:filters.dateFrom().toEpochMilli()))
+                                    .params("to", co.elastic.clients.json.JsonData.of(filters.dateTo()==null?Long.MAX_VALUE:filters.dateTo().toEpochMilli())))))
                             .aggregations("withLocation", aggregation -> aggregation
                                     .filter(query -> query.exists(exists -> exists.field("location"))))
                             .aggregations("averageResolution", aggregation -> aggregation
@@ -95,7 +106,22 @@ public class AnalyticsService {
                 interval,
                 aggregations.get("timeline").dateHistogram().buckets().array().stream()
                         .map(bucket -> new AnalyticsTimelinePoint(Instant.parse(bucket.keyAsString()), bucket.docCount()))
-                        .toList());
+                        .toList(), workflow(aggregations));
+    }
+
+    static co.elastic.clients.elasticsearch._types.query_dsl.Query openQuery() {
+        return co.elastic.clients.elasticsearch._types.query_dsl.Query.of(q -> q.bool(b -> b.minimumShouldMatch("1")
+                .should(s -> s.bool(v -> v.mustNot(n -> n.exists(e -> e.field("workflowVersion"))).mustNot(n -> n.exists(e -> e.field("completedAt")))))
+                .should(s -> s.bool(v -> v.filter(f -> f.exists(e -> e.field("workflowVersion")))
+                        .mustNot(n -> n.terms(t -> t.field("reportStatus").terms(values -> values.value(List.of("RESOLVED","CLOSED","REJECTED").stream().map(co.elastic.clients.elasticsearch._types.FieldValue::of).toList()))))))));
+    }
+    private WorkflowAnalytics workflow(Map<String, Aggregate> a) {
+        if (!a.containsKey("observedCases")) return null;
+        long observed = a.get("observedCases").filter().docCount();
+        return new WorkflowAnalytics(observed, finite(a.get("workflowResolutionAvg").avg().value()), percentile(a.get("workflowResolutionP50")),
+                finite(a.get("workflowClosureAvg").avg().value()), percentile(a.get("workflowClosureP50")),
+                a.get("overdueOpen").filter().docCount(), Math.max(1,overdueDays), (long)a.get("statusChanges").sum().value(),
+                observed==0?null:(double)a.get("workflowResolved").filter().docCount()/observed, a.get("reopenedReports").filter().docCount());
     }
 
     private List<AnalyticsBucket> terms(Aggregate aggregate) {
