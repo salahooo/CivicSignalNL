@@ -31,7 +31,16 @@ import org.testcontainers.junit.jupiter.*;
 @Testcontainers
 @SpringJUnitConfig(WorkflowDatabaseTest.Config.class)
 class WorkflowDatabaseTest {
-    @Container static final PostgreSQLContainer<?> postgres=new PostgreSQLContainer<>("postgres:17.5-alpine");
+    @Container static final PostgreSQLContainer<?> postgres=new PreservingPostgres().withTmpFs(Map.of("/var/lib/postgresql/data","rw"));
+    static class PreservingPostgres extends PostgreSQLContainer<PreservingPostgres> {
+        PreservingPostgres() { super("postgres:17.5-alpine"); }
+        @Override public void stop() {
+            if (Boolean.parseBoolean(System.getenv("CIVICSIGNAL_TEST_PRESERVE_VOLUMES"))) {
+                // With Ryuk disabled, remove only this test container, never its image volumes.
+                if (getContainerId()!=null) getDockerClient().removeContainerCmd(getContainerId()).withForce(true).withRemoveVolumes(false).exec();
+            } else super.stop();
+        }
+    }
     @Autowired CaseService cases;
     @Autowired JdbcTemplate jdbc;
     @Autowired OutboxPublisher outbox;

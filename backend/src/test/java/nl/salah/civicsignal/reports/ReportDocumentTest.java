@@ -7,8 +7,16 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ReportDocumentTest {
+    @org.junit.jupiter.api.Test void missingAndBlankCanonicalJsonStatusesNormalizeToNew() throws Exception {
+        var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        for (String json : new String[]{"{\"reportId\":\"legacy\"}", "{\"reportId\":\"legacy\",\"reportStatus\":\"\"}"}) {
+            assertThat(mapper.readValue(json, ReportDocument.class).reportStatus()).isEqualTo("NEW");
+        }
+        assertThat(ReportFilterQueryBuilder.newStatusQuery().toString()).contains("NEW", "must_not", "exists");
+    }
 
     @Test
     void mapsEventToSearchDocument() {

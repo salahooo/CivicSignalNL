@@ -1,5 +1,14 @@
 # CivicSignal NL
 
+Amsterdam live import now has a side-effect-free five-record preview, one-use
+publication confirmation, safe Dutch errors and isolated source cursors.
+Public visualization WGS84 coordinates feed the map. Start with the
+[Amsterdam contract and safe live smoke](docs/incremental-sync.md).
+`node scripts/amsterdam-live-smoke.mjs` is read-only by default; actual publication
+requires explicit approval and `--confirm-publish-five`. This smoke removes only
+its temporary records/containers/network and never deletes volumes.
+See the [verified live-import results](docs/amsterdam-live-validation.md).
+
 The report case workflow adds authenticated dossiers, validated status transitions, internal demonstration notes and an immutable audit trail. PostgreSQL commands and a transactional outbox feed a version-guarded public Elasticsearch projection through Kafka. Start with [report workflow](docs/report-workflow.md) and [transactional outbox](docs/transactional-outbox.md).
 
 Full workflow smoke: `node scripts/compose-smoke.mjs --workflow`. Backend tests now require Docker for an isolated PostgreSQL Testcontainer. Browser verification: `cd frontend` then `npx playwright test e2e/report-workflow.spec.ts --workers=2`.

@@ -16,6 +16,10 @@ public record ReportDocument(
         String searchableText,String municipality,String neighborhood,String subcategory,String reportStatus,String completedAt,Integer resolutionDays,ReportLocation location,
         String workflowUpdatedAt, String resolvedAt, String closedAt, Long workflowVersion) {
 
+    public ReportDocument {
+        reportStatus = reportStatus == null || reportStatus.isBlank() ? "NEW" : reportStatus;
+    }
+
     public ReportDocument(String eventId, String reportId, String eventType, int schemaVersion, String category, String district,
             String occurredAt, String sourceType, String sourceName, String searchableText, String municipality, String neighborhood,
             String subcategory, String reportStatus, String completedAt, Integer resolutionDays, ReportLocation location) {

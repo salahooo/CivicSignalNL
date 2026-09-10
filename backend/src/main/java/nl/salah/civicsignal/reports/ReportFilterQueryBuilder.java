@@ -25,7 +25,9 @@ public final class ReportFilterQueryBuilder {
         filtered |= keyword(query, "category", criteria.category());
         filtered |= keyword(query, "municipality", criteria.municipality());
         filtered |= keyword(query, "district", criteria.district());
-        filtered |= keyword(query, "reportStatus", criteria.reportStatus());
+        if ("NEW".equals(criteria.reportStatus())) {
+            query.filter(newStatusQuery()); filtered = true;
+        } else filtered |= keyword(query, "reportStatus", criteria.reportStatus());
 
         if (criteria.dateFrom() != null || criteria.dateTo() != null) {
             query.filter(q -> q.range(r -> r.date(d -> {
@@ -49,6 +51,13 @@ public final class ReportFilterQueryBuilder {
         }
         query.filter(q -> q.term(t -> t.field(field).value(value.trim())));
         return true;
+    }
+
+    static Query newStatusQuery() {
+        return Query.of(q -> q.bool(b -> b.minimumShouldMatch("1")
+                .should(s -> s.term(t -> t.field("reportStatus").value("NEW")))
+                .should(s -> s.term(t -> t.field("reportStatus").value("")))
+                .should(s -> s.bool(v -> v.mustNot(n -> n.exists(e -> e.field("reportStatus")))))));
     }
 
     private static boolean hasText(String value) {

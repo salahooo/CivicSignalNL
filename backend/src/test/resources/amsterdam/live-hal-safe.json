@@ -1,0 +1,8 @@
+{
+  "_embedded": {"meldingen": [
+    {"id":"0000039B5B9FFAAC08EA9DA13F5C83B3969C5FAE","hoofdcategorie":"Schoon","subcategorie":"Zwerfafval","externeStatus":"Afgesloten","datumMelding":"2023-11-16","tijdstipMelding":"07:43:00","gbdStadsdeelNaam":"Oost","bagWoonplaatsNaam":"Amsterdam","laatstGezienBron":"2026-09-10T12:11:59","latitudeVisualisatie":52.3591663,"longitudeVisualisatie":4.9257622,"geometrieVisualisatie":{"type":"Point","coordinates":[123566.18063127378,485796.8823298572]}},
+    {"id":"00000D15B4A8EB71C7ACC8578AD9290E9D441DF5","hoofdcategorie":"Schoon","externeStatus":"Afgesloten","datumMelding":"2022-05-01","tijdstipMelding":"13:36:37","gbdStadsdeelNaam":"Centrum","laatstGezienBron":"2026-09-10T12:11:59","latitudeVisualisatie":52.3812337,"longitudeVisualisatie":4.8867802}
+  ]},
+  "_links":{"next":{"href":"https://api.data.amsterdam.nl/v1/meldingen/meldingen?_pageSize=2&page=2"}},
+  "page":{"number":1,"size":2}
+}

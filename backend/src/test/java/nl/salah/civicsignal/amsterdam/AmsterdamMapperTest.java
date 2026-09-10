@@ -5,6 +5,14 @@ import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 class AmsterdamMapperTest {
+    @Test void rejectsInvalidCoordinatesAndIgnoresInvalidOptionalCompletion() {
+        for (Double lat : new Double[]{null, Double.NaN, Double.POSITIVE_INFINITY, 0d, 54d}) {
+            var record = new AmsterdamRecord("safe", "Afval", null, null, "2026-09-01", "10:00:00", null, "Wijk", null, "2026-09-01T10:00:00", null, "invalid", "time", -1, lat, 4.9);
+            var event = new AmsterdamMapper().map(record);
+            assertThat(event.location()).isNull(); assertThat(event.completedAt()).isNull(); assertThat(event.resolutionDays()).isNull();
+            assertThat(event.district()).isEqualTo("Wijk");
+        }
+    }
     @Test void mapsOnlyAllowedAmsterdamFieldsToAnOfficialEvent() {
         AmsterdamRecord record = new AmsterdamRecord("42", "Wegen", null, null, "2026-09-08", "13:20:53", "West", null, null, "2026-09-08T13:21:00Z");
         var event = new AmsterdamMapper().map(record);

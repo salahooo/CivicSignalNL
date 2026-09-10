@@ -6,3 +6,5 @@ spring:
 civic-signal:
   cors:
     allowed-origins: ""
+server:
+  forward-headers-strategy: framework

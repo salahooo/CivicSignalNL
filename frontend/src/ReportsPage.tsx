@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { searchReports } from './api'
 import { useAdmin } from './AdminAuth'
+import { sourceLabel as source } from './displayLabels'
 import { StatusBadge } from './CasePage'
 import type { ReportDocument, ReportFilters, ReportLocation, SearchResponse } from './types'
 
 const empty: SearchResponse = { items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }
 const date = (value?: string | null) => value ? new Intl.DateTimeFormat('nl-NL', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : 'Niet beschikbaar'
 const value = (item?: string | null) => item?.trim() || 'Onbekend'
-const source = (type?: string | null) => type === 'OFFICIAL_OPEN_DATA' ? 'Officiële open data' : type === 'SYNTHETIC' ? 'Synthetisch' : type === 'MANUAL' ? 'Handmatig' : 'Bron onbekend'
 
 export function ReportsPage({ filters, page, onPage, onMap }: { filters: ReportFilters; page: number; onPage: (page: number) => void; onMap: (location: ReportLocation) => void }) {
   const [results, setResults] = useState(empty); const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const [retry, setRetry] = useState(0)

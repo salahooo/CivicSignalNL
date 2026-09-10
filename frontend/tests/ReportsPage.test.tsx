@@ -19,7 +19,7 @@ it('toont verrijkte velden, bronbadge, ontbrekende waarden en kaartactie', async
   ], page: 0, size: 20, totalElements: 2, totalPages: 1 })
   render(<AdminAuthProvider><ReportsPage filters={emptyFilters} page={0} onPage={vi.fn()} onMap={onMap}/></AdminAuthProvider>)
   expect(await screen.findByText('AMS-1')).toBeInTheDocument()
-  expect(screen.getByText('Officiële open data')).toBeInTheDocument()
+  expect(screen.getByText('Gemeente Amsterdam Open Data')).toBeInTheDocument()
   expect(screen.getByText('Grof afval')).toBeInTheDocument()
   expect(screen.getAllByText('Onbekend').length).toBeGreaterThan(0)
   await userEvent.click(screen.getByRole('button', { name: 'Open op kaart' }))

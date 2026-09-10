@@ -1,6 +1,8 @@
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { AnalyticsBucket, AnalyticsSummary } from './types'
 
+import { sourceLabel, statusLabel } from './displayLabels'
+
 const colors = ['#17614e', '#2b6f91', '#d99b2b', '#795c9b', '#4f7b64', '#8c6b47']
 const count = (value: number) => new Intl.NumberFormat('nl-NL').format(value)
 const date = (value: string) => new Intl.DateTimeFormat('nl-NL', { day: '2-digit', month: 'short' }).format(new Date(value))
@@ -11,6 +13,7 @@ function EmptyChart() { return <p className="chart-empty">Voor deze selectie zij
 function TableSummary({ data }: { data: AnalyticsBucket[] }) { return <details><summary>Tekstsamenvatting</summary><ul>{data.map(item => <li key={item.value}>{item.value}: {count(item.count)}</li>)}</ul></details> }
 
 export default function ChartsPanel({ summary }: { summary: AnalyticsSummary }) {
+  summary = { ...summary, topSources: summary.topSources.map(i => ({ ...i, value: sourceLabel(i.value) })), topStatuses: summary.topStatuses.map(i => ({ ...i, value: statusLabel(i.value) })) }
   const areas = summary.topMunicipalities.length ? summary.topMunicipalities : summary.topDistricts
   return <section aria-labelledby="charts-title"><div className="section-heading"><div><p className="eyebrow">Patronen</p><h2 id="charts-title">Visualisaties</h2></div></div><div className="chart-grid">
     <figure className="chart-card wide" aria-labelledby="timeline-title"><figcaption><h3 id="timeline-title">Meldingen door de tijd</h3><p>Aantal meldingen per {summary.interval === 'DAY' ? 'dag' : summary.interval === 'WEEK' ? 'week' : 'maand'}.</p></figcaption>{summary.timeline.length ? <div className="chart"><ResponsiveContainer><LineChart data={summary.timeline}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="timestamp" tickFormatter={date}/><YAxis allowDecimals={false} domain={[0, 'auto']}/><Tooltip labelFormatter={dateLabel} formatter={tooltip}/><Line dataKey="count" stroke={colors[0]} strokeWidth={3} dot={false} isAnimationActive={false}/></LineChart></ResponsiveContainer></div> : <EmptyChart/>}<TableSummary data={summary.timeline.map(item => ({ value: date(item.timestamp), count: item.count }))}/></figure>
