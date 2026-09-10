@@ -32,7 +32,7 @@ async function execute<T>(path: string, init: RequestInit, authorization: string
     response = await fetch(new URL(path, apiBaseUrl), { ...init, headers, signal: linked.signal, redirect: 'error' })
   } catch (error) {
     if (linked.signal.aborted) throw Object.assign(new Error('De aanvraag duurde te lang of is geannuleerd.'), { name: 'AbortError' })
-    throw new Error('De service is tijdelijk niet bereikbaar.', { cause: error })
+    throw Object.assign(new Error('De service is tijdelijk niet bereikbaar.', { cause: error }), { kind: 'network' })
   } finally { linked.dispose() }
   if (response.status === 401 && authorization) { adminAuthorization = null; unauthorized() }
   if (!response.ok) {
@@ -68,7 +68,7 @@ const report = (value: unknown): ReportDocument | null => {
   return { reportId, eventId: text(item.eventId) ?? undefined, eventType: text(item.eventType) ?? undefined,
     schemaVersion: optionalNumber(item.schemaVersion) ?? undefined, category: text(item.category), district: text(item.district), occurredAt: text(item.occurredAt),
     sourceType: sourceTypes.includes(source as SourceType) ? source as SourceType : null, sourceName: text(item.sourceName), municipality: text(item.municipality),
-    neighborhood: text(item.neighborhood), subcategory: text(item.subcategory), reportStatus: text(item.reportStatus), completedAt: text(item.completedAt),
+    neighborhood: text(item.neighborhood), subcategory: text(item.subcategory), reportStatus: text(item.reportStatus)?.trim() || 'NEW', completedAt: text(item.completedAt),
     resolutionDays: optionalNumber(item.resolutionDays), location: location(item.location) }
 }
 
@@ -103,7 +103,7 @@ export const getDeadLetters = () => adminRequest<DeadLetterResponse>('/api/v1/ad
 export const getGeneratorStatus = () => adminRequest<GeneratorStatus>('/api/v1/admin/generator/status')
 export const generatorAction = (action: 'start' | 'stop' | 'generate-one') => adminRequest<GeneratorStatus | ReportEvent>(`/api/v1/admin/generator/${action}`, { method: 'POST' })
 export const getAmsterdamStatus = () => adminRequest<AmsterdamStatus>('/api/v1/admin/sources/amsterdam/status')
-export const importAmsterdam = (limit: number, dryRun: boolean) => adminRequest<AmsterdamImportResult>(`/api/v1/admin/sources/amsterdam/import?limit=${limit}&dryRun=${dryRun}`, { method: 'POST' })
+export const importAmsterdam = (limit: number, dryRun: boolean, confirmationToken?: string) => adminRequest<AmsterdamImportResult>(`/api/v1/admin/sources/amsterdam/import?limit=${limit}&dryRun=${dryRun}`, { method: 'POST', headers: confirmationToken ? { 'X-Amsterdam-Preview': confirmationToken } : {} })
 export const getScheduler = () => adminRequest<SchedulerStatus>('/api/v1/admin/sources/amsterdam/scheduler')
 export const schedulerAction = (action: 'pause' | 'resume' | 'run-now') => adminRequest<SchedulerStatus>(`/api/v1/admin/sources/amsterdam/scheduler/${action}`, { method: 'POST' })
 export const getSyncRuns = (page: number) => adminRequest<SyncRuns>(`/api/v1/admin/sources/amsterdam/runs?page=${page}&size=10`)

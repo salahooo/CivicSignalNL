@@ -65,6 +65,47 @@ The script owns project `civicsignal-readiness-smoke`, port 18081 and fresh tmpf
 
 ## Troubleshooting
 
+### Amsterdam browser preview and safe diagnosis
+
+The confirmed 403 was **a source failure masked by the secured error dispatch**,
+not missing ADMIN credentials, CSRF or same-origin CORS. With the original jar
+and Nginx configuration in an isolated baseline project, authenticated GET
+returned 200 (source enabled); authenticated POST returned 403 FORBIDDEN both
+with and without the correctly matching Origin. Temporary safe security tracing
+confirmed `Securing POST /error` for those requests. The original adapter used
+unsupported `_page` (Amsterdam returned 400), wrapped that failure as 503, then
+Spring dispatched to `/error`, which fell under `anyRequest().denyAll()`.
+The frontend collapsed the result into a generic import error.
+
+The initial diagnostic's `Invalid CORS request` was a Host/Origin mismatch in
+the test request, not proof of the user's failure. It was corrected and rerun
+against the original application before drawing the final conclusion. A browser
+extension's `runtime.lastError` does not explain the reproduced server response.
+
+Amsterdam errors now resolve directly to safe ProblemDetail with a request ID,
+preserving status without error redispatch. The unsupported page parameter and
+the separate `Instant.parse` failure for offsetless source timestamps are fixed.
+ADMIN role checks, HTTP Basic, rate limiting and disabled-CSRF configuration are
+unchanged. Compose additionally makes its proxy metadata explicit with framework
+forwarded-header handling; Nginx replaces forwarded host/proto/client-IP and strips
+client-supplied Forwarded/port/SSL/prefix. No wildcard origin was introduced.
+Do not expose this trusted-proxy backend directly with the Compose profile.
+
+After rebuilding backend/frontend deliberately, sign in on the same frontend
+origin, enable the source only, leave the scheduler off, and preview at most five
+records. A backend restart keeps configured Basic credentials valid; browser
+refresh discards the in-memory login and server restart discards preview tokens.
+Never copy an Authorization header/API-key into logs or tickets. Diagnose using
+the safe status/code/request-ID and ADMIN source status. A 409 suspicious-cursor
+error needs operator review, not automatic SQL deletion or volume recreation.
+
+Use `node scripts/amsterdam-live-smoke.mjs` for a unique tmpfs project on 18082.
+Only explicitly approved publication uses `--confirm-publish-five`. This is the
+volume-preserving smoke for Amsterdam; do not substitute the older generic smoke
+when all volume deletion is prohibited. It does not touch the normal project.
+See [incremental sync](incremental-sync.md) for exact checks, geo handling,
+source namespaces and the optional volume-preserving backend test mode.
+
 - `docker compose ps -a` identifies failed initialization or unhealthy services. `kafka-init` should exit with code 0; the other five services should be healthy.
 - A 503 readiness status means an essential dependency or the geo mapping is unavailable. Authorized `/actuator/metrics` and `docker compose logs backend` help diagnose it; public health deliberately hides details.
 - Database authentication failure after a password change requires the original database password or deliberate credential rotation, not volume deletion.

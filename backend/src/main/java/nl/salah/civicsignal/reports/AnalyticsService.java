@@ -72,7 +72,7 @@ public class AnalyticsService {
                             .aggregations("topDistricts", aggregation -> aggregation
                                     .terms(terms -> terms.field("district").size(TOP_BUCKET_LIMIT)))
                             .aggregations("topStatuses", aggregation -> aggregation
-                                    .terms(terms -> terms.field("reportStatus").size(TOP_BUCKET_LIMIT)))
+                                    .terms(terms -> terms.field("reportStatus").missing("NEW").size(TOP_BUCKET_LIMIT)))
                             .aggregations("timeline", aggregation -> aggregation.dateHistogram(histogram -> histogram
                                     .field("occurredAt")
                                     .calendarInterval(interval.elasticsearchInterval())
@@ -102,7 +102,7 @@ public class AnalyticsService {
                 terms(aggregations.get("topSources")),
                 terms(aggregations.get("topMunicipalities")),
                 terms(aggregations.get("topDistricts")),
-                terms(aggregations.get("topStatuses")),
+                statusTerms(aggregations.get("topStatuses")),
                 interval,
                 aggregations.get("timeline").dateHistogram().buckets().array().stream()
                         .map(bucket -> new AnalyticsTimelinePoint(Instant.parse(bucket.keyAsString()), bucket.docCount()))
@@ -111,6 +111,7 @@ public class AnalyticsService {
 
     static co.elastic.clients.elasticsearch._types.query_dsl.Query openQuery() {
         return co.elastic.clients.elasticsearch._types.query_dsl.Query.of(q -> q.bool(b -> b.minimumShouldMatch("1")
+                .should(ReportFilterQueryBuilder.newStatusQuery())
                 .should(s -> s.bool(v -> v.mustNot(n -> n.exists(e -> e.field("workflowVersion"))).mustNot(n -> n.exists(e -> e.field("completedAt")))))
                 .should(s -> s.bool(v -> v.filter(f -> f.exists(e -> e.field("workflowVersion")))
                         .mustNot(n -> n.terms(t -> t.field("reportStatus").terms(values -> values.value(List.of("RESOLVED","CLOSED","REJECTED").stream().map(co.elastic.clients.elasticsearch._types.FieldValue::of).toList()))))))));
@@ -128,6 +129,13 @@ public class AnalyticsService {
         return aggregate.sterms().buckets().array().stream()
                 .map(bucket -> new AnalyticsBucket(bucket.key().stringValue(), bucket.docCount()))
                 .toList();
+    }
+
+    private List<AnalyticsBucket> statusTerms(Aggregate aggregate) {
+        Map<String,Long> counts = new java.util.HashMap<>();
+        terms(aggregate).forEach(bucket -> counts.merge(bucket.value().isBlank() ? "NEW" : bucket.value(),bucket.count(),Long::sum));
+        return counts.entrySet().stream().map(e -> new AnalyticsBucket(e.getKey(),e.getValue()))
+                .sorted(java.util.Comparator.comparingLong(AnalyticsBucket::count).reversed().thenComparing(AnalyticsBucket::value)).toList();
     }
 
     private Double percentile(Aggregate aggregate) {

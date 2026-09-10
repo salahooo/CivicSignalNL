@@ -6,6 +6,7 @@ import { statusLabels, type CaseDetail, type CaseStatus } from './workflow'
 
 export const caseDate = (value: string | null | undefined) => value ? new Date(value).toLocaleString('nl-NL') : 'Nog niet beschikbaar'
 export function StatusBadge({ status }: { status: string | null | undefined }) {
+  status = status?.trim() || 'NEW'
   const known = status && Object.hasOwn(statusLabels, status)
   return <span className={`case-status ${known ? `case-${status.toLowerCase()}` : ''}`}>{known ? statusLabels[status as CaseStatus] : status || 'Onbekend'}</span>
 }

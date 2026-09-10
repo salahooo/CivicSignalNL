@@ -1,5 +1,20 @@
 # Security notes
 
+Amsterdam manual imports require ADMIN Basic authentication plus a five-minute,
+one-use, actor/limit-bound preview token for publication. Preview reads no database
+and writes no persistent state. Tokens and credentials remain memory-only and
+never appear in URLs. The source client forwards no browser/admin headers, follows
+no redirects and uses only public visualization WGS84 coordinates. Safe source
+ProblemDetail/logs contain category and request ID, never upstream payload/secrets.
+
+The Compose backend trusts forwarded headers exclusively behind its internal
+Nginx ingress. Nginx replaces X-Forwarded-Host/Proto/For and strips Forwarded, forwarded
+port, SSL and prefix supplied by clients. Client-IP spoofing cannot bypass the
+authentication rate limit. Preserve that trust boundary: never expose
+the Compose-profile backend directly to untrusted clients. Foreign origins remain
+rejected, ADMIN role checks and the existing rate limit remain in force, and CSRF
+configuration is unchanged. Local host development does not enable proxy trust.
+
 Operational dossier/status/note/audit/outbox routes are ADMIN-only. Actors come from the authenticated principal, never the request body. Internal note/reason text is normalized and bounded; it is stored only in the secured PostgreSQL command/audit/outbox model and internal Kafka workflow topic. It never enters public search, analytics, map documents or logs. Do not enter real personal data: this is a demonstration workflow. Outbox payload editing and arbitrary replay are not exposed.
 
 Workflow logs add sanitized report/event IDs, event type, safe request ID and outcome. They omit actor, reason, note text and payload. Browser notes are rendered as text; dialogs use native focus containment. Credentials remain memory-only, and logout/401 immediately removes private dossier state. See [privacy boundaries and limits](docs/report-workflow.md).
