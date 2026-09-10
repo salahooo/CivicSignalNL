@@ -5,6 +5,7 @@ import { ErrorBoundary } from './ErrorBoundary'
 import { FilterBar } from './FilterBar'
 import { OverviewPage } from './OverviewPage'
 import { ReportsPage } from './ReportsPage'
+import { CasePage } from './CasePage'
 import { SourcesPage } from './SourcesPage'
 import type { DashboardSection, ReportFilters, ReportLocation, SourceType } from './types'
 
@@ -22,7 +23,7 @@ function stateFromUrl() {
 
 function urlFor(section: DashboardSection, filters: ReportFilters, page = 0) { const params = new URLSearchParams(); Object.entries(filters).forEach(([key, raw]) => { const value = raw.trim(); if (value) params.set(key, value) }); if (section === 'reports' && page > 0) params.set('page', String(page)); const query = params.toString(); return `${section === 'overview' ? '/' : `/${section}`}${query ? `?${query}` : ''}` }
 
-export default function App() {
+function Dashboard() {
   const initial = stateFromUrl(); const [section, setSection] = useState(initial.section); const [applied, setApplied] = useState(initial.filters); const [draft, setDraft] = useState(initial.filters); const [page, setPage] = useState(initial.page); const [filterError, setFilterError] = useState(''); const [shareMessage, setShareMessage] = useState(''); const [mapFocus, setMapFocus] = useState<ReportLocation | null>(null)
   useEffect(() => { const pop = () => { const state = stateFromUrl(); setSection(state.section); setApplied(state.filters); setDraft(state.filters); setPage(state.page); setFilterError(''); setShareMessage('') }; window.addEventListener('popstate', pop); return () => window.removeEventListener('popstate', pop) }, [])
   const writeUrl = (nextSection: DashboardSection, filters = applied, nextPage = page, replace = false) => { window.history[replace ? 'replaceState' : 'pushState']({}, '', urlFor(nextSection, filters, nextPage)) }
@@ -38,4 +39,16 @@ export default function App() {
   return <><header className="site-header"><div className="brand"><span className="brand-mark" aria-hidden="true">CS</span><div><strong>CivicSignal NL</strong><small>Openbare ruimte · Nederland</small></div></div><nav className="primary-nav" aria-label="Hoofdnavigatie">{sections.map(item => <button key={item.id} className={section === item.id ? 'active' : ''} aria-current={section === item.id ? 'page' : undefined} onClick={() => navigate(item.id)}>{item.label}</button>)}</nav></header><main className="shell"><section className="hero"><div><p className="eyebrow">Publiek dataplatform</p><h1>{sections.find(item => item.id === section)?.label}</h1><p>Van betrouwbare events naar doorzoekbare inzichten voor de Nederlandse openbare ruimte.</p></div><div className="hero-status"><span>Kafka eventlog</span><span>Elasticsearch read model</span><span>Privacybewust</span></div></section>
     {(['overview', 'reports', 'map'] as DashboardSection[]).includes(section) && <FilterBar draft={draft} applied={applied} error={filterError} shareMessage={shareMessage} onDraft={setDraft} onApply={apply} onClear={clear} onRemove={remove} onShare={() => void share()}/>}<ErrorBoundary key={section} title="Onderdeel niet beschikbaar">{section === 'overview' ? <OverviewPage filters={applied} filterContext={filterContext}/> : section === 'reports' ? <ReportsPage filters={applied} page={page} onPage={changePage} onMap={openMap}/> : section === 'map' ? <Suspense fallback={<div className="panel">Kaartmodule laden…</div>}><MapPage filters={applied} focus={mapFocus}/></Suspense> : section === 'sources' ? <SourcesPage/> : section === 'architecture' ? <ArchitecturePage/> : <AdminPage viewOfficial={viewOfficial}/>}</ErrorBoundary>
   </main><footer>Open brondata, expliciete herkomst en begrensde lokale demonstratie.</footer></>
+}
+
+function caseFromPath() {
+  const parts = window.location.pathname.split('/')
+  if (parts[1] !== 'admin' || parts[2] !== 'reports' || !parts[3]) return null
+  try { return decodeURIComponent(parts.slice(3).join('/')) } catch { return null }
+}
+export default function App() {
+  const [reportId, setReportId] = useState(caseFromPath)
+  useEffect(() => { const pop = () => setReportId(caseFromPath()); window.addEventListener('popstate', pop); return () => window.removeEventListener('popstate', pop) }, [])
+  if (reportId) return <main className="shell"><h1>Meldingendossier</h1><CasePage reportId={reportId} onBack={() => { window.history.pushState({}, '', '/reports'); window.dispatchEvent(new PopStateEvent('popstate')) }}/></main>
+  return <Dashboard/>
 }

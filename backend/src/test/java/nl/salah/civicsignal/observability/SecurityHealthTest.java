@@ -40,7 +40,7 @@ class SecurityHealthTest {
         } finally { dependencyUp.set(true); }
     }
     @Test void metricsInfoAndAdminRequireAuthentication() throws Exception {
-        for (String path : new String[]{"/actuator/metrics", "/actuator/info", "/api/v1/admin/auth/me"})
+        for (String path : new String[]{"/actuator/metrics", "/actuator/info", "/api/v1/admin/auth/me", "/api/v1/admin/reports/TEST", "/api/v1/admin/reports/TEST/audit", "/api/v1/admin/outbox/status"})
             mvc.perform(get(path)).andExpect(status().isUnauthorized()).andExpect(header().exists(RequestIds.HEADER));
         String header = "Basic " + Base64.getEncoder().encodeToString((admin.username() + ":" + admin.password()).getBytes(StandardCharsets.UTF_8));
         mvc.perform(get("/actuator/metrics").header("Authorization", header)).andExpect(status().isOk());

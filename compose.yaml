@@ -41,6 +41,9 @@ services:
         --partitions 3 --replication-factor 1 &&
         /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092
         --create --if-not-exists --topic civic-reports.dlt
+        --partitions 3 --replication-factor 1 &&
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092
+        --create --if-not-exists --topic civic-reports.workflow
         --partitions 3 --replication-factor 1
     restart: "no"
 
@@ -90,6 +93,7 @@ services:
       CIVICSIGNAL_AMSTERDAM_SCHEDULER_ENABLED: ${CIVICSIGNAL_AMSTERDAM_SCHEDULER_ENABLED:-false}
       CIVICSIGNAL_AMSTERDAM_API_KEY: ${CIVICSIGNAL_AMSTERDAM_API_KEY:-}
       CIVICSIGNAL_GENERATOR_ENABLED: ${CIVICSIGNAL_GENERATOR_ENABLED:-false}
+      CIVICSIGNAL_OUTBOX_ENABLED: ${CIVICSIGNAL_OUTBOX_ENABLED:-true}
       JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=65
     stop_grace_period: 60s
     depends_on:

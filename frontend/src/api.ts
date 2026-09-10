@@ -36,14 +36,22 @@ async function execute<T>(path: string, init: RequestInit, authorization: string
   } finally { linked.dispose() }
   if (response.status === 401 && authorization) { adminAuthorization = null; unauthorized() }
   if (!response.ok) {
-    const body = await response.json().catch(() => ({})) as { message?: string }
-    throw Object.assign(new Error(body.message || 'De aanvraag kon niet worden verwerkt.'), { status: response.status })
+    const body = await response.json().catch(() => ({})) as { message?: string; detail?: string }
+    throw Object.assign(new Error(body.detail || body.message || 'De aanvraag kon niet worden verwerkt.'), { status: response.status })
   }
   return response.json() as Promise<T>
 }
 
 const publicRequest = <T>(path: string, init: RequestInit = {}) => execute<T>(path, init, null)
 const adminRequest = <T>(path: string, init: RequestInit = {}, override?: string) => execute<T>(path, init, override ?? adminAuthorization)
+
+const casePath = (id: string) => `/api/v1/admin/reports/${encodeURIComponent(id)}`
+export const getCase = (id: string, signal?: AbortSignal) => adminRequest<import('./workflow').CaseDetail>(casePath(id), { signal })
+export const getCaseAudit = (id: string, page: number) => adminRequest<import('./workflow').AuditPage>(`${casePath(id)}/audit?page=${page}&size=20`)
+export const changeCaseStatus = (id: string, targetStatus: import('./workflow').CaseStatus, reason: string, expectedVersion: number, eventId: string) => adminRequest<import('./workflow').WorkflowEvent>(`${casePath(id)}/status`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ targetStatus, reason, expectedVersion, eventId }) })
+export const addCaseNote = (id: string, text: string, expectedVersion: number, eventId: string, noteId: string) => adminRequest<import('./workflow').WorkflowEvent>(`${casePath(id)}/notes`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, expectedVersion, eventId, noteId }) })
+export const getOutboxStatus = () => adminRequest<import('./workflow').OutboxStatus>('/api/v1/admin/outbox/status')
+export const runOutbox = () => adminRequest<{ processed: number; status: import('./workflow').OutboxStatus }>('/api/v1/admin/outbox/run-now', { method: 'POST' })
 
 export function filterParams(filters: ReportFilters) {
   const params = new URLSearchParams()

@@ -25,7 +25,7 @@ public class DependencyHealth {
     @Bean HealthIndicator kafkaTopicsHealthIndicator(AdminClient admin, KafkaProducerProperties producer, KafkaRetryProperties retry) {
         return () -> {
             try {
-                var topics = admin.describeTopics(List.of(producer.rawReportsTopic(), retry.deadLetterTopic()))
+                var topics = admin.describeTopics(List.of(producer.rawReportsTopic(), retry.deadLetterTopic(), nl.salah.civicsignal.workflow.OutboxPublisher.TOPIC))
                         .allTopicNames().get(3, TimeUnit.SECONDS);
                 boolean ready = topics.values().stream().allMatch(topic -> !topic.partitions().isEmpty()
                         && topic.partitions().stream().allMatch(partition -> partition.leader() != null && partition.leader().id() >= 0));
